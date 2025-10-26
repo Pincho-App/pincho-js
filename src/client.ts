@@ -48,7 +48,7 @@ export class WirePusher {
     this.token = config.token;
     this.userId = config.userId;
     this.timeout = config.timeout ?? 30000;
-    this.baseUrl = config.baseUrl ?? 'https://wirepusher-gateway-1xatwfdc.uc.gateway.dev';
+    this.baseUrl = config.baseUrl ?? 'https://wirepusher.com';
   }
 
   /**

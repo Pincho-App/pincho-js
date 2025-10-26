@@ -321,7 +321,7 @@ describe('WirePusher', () => {
       await client.send('Test', 'Message');
 
       const call = mockFetch.mock.calls[0]!;
-      expect(call[0]).toBe('https://wirepusher-gateway-1xatwfdc.uc.gateway.dev/send');
+      expect(call[0]).toBe('https://wirepusher.com/send');
       expect(call[1]?.method).toBe('POST');
       expect(call[1]?.headers).toEqual({ 'Content-Type': 'application/json' });
     });
