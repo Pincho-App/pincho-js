@@ -1,0 +1,128 @@
+# Google Cloud Build configuration for WirePusher JavaScript SDK
+#
+# This configuration runs tests, builds the package, and optionally publishes to npm.
+#
+# Triggers:
+# - Push to any branch: Run tests and build
+# - Git tag (v*): Run tests, build, and publish to npm
+#
+# Required Secret Manager secrets:
+# - npm-token: npm authentication token for publishing
+#
+# Setup:
+# 1. Create npm token: npm token create --read-only=false
+# 2. Store in Secret Manager:
+#    gcloud secrets create npm-token --data-file=- <<< "your_npm_token"
+# 3. Grant Cloud Build access:
+#    gcloud secrets add-iam-policy-binding npm-token \
+#      --member="serviceAccount:PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+#      --role="roles/secretmanager.secretAccessor"
+
+steps:
+  # Step 1: Install dependencies
+  - name: 'node:18'
+    id: 'install'
+    entrypoint: 'npm'
+    args: ['ci']
+    env:
+      - 'NODE_ENV=development'
+
+  # Step 2: Run linter
+  - name: 'node:18'
+    id: 'lint'
+    entrypoint: 'npm'
+    args: ['run', 'lint']
+    waitFor: ['install']
+
+  # Step 3: Run type checking
+  - name: 'node:18'
+    id: 'typecheck'
+    entrypoint: 'npm'
+    args: ['run', 'typecheck']
+    waitFor: ['install']
+
+  # Step 4: Run tests with coverage
+  - name: 'node:18'
+    id: 'test'
+    entrypoint: 'npm'
+    args: ['run', 'test:coverage']
+    waitFor: ['install']
+
+  # Step 5: Build package
+  - name: 'node:18'
+    id: 'build'
+    entrypoint: 'npm'
+    args: ['run', 'build']
+    waitFor: ['lint', 'typecheck', 'test']
+
+  # Step 6: Verify package contents
+  - name: 'node:18'
+    id: 'verify'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "Verifying package contents..."
+        ls -lh dist/
+        echo ""
+        echo "Package files:"
+        cat package.json | grep -A 10 '"files"'
+        echo ""
+        echo "Checking for required files..."
+        test -f dist/index.js && echo "✓ ESM build exists" || exit 1
+        test -f dist/index.cjs && echo "✓ CJS build exists" || exit 1
+        test -f dist/index.d.ts && echo "✓ TypeScript definitions exist" || exit 1
+        test -f dist/index.d.cts && echo "✓ CJS TypeScript definitions exist" || exit 1
+        test -f LICENSE && echo "✓ LICENSE exists" || exit 1
+        test -f README.md && echo "✓ README.md exists" || exit 1
+        echo ""
+        echo "✅ Package verification successful!"
+    waitFor: ['build']
+
+  # Step 7: Publish to npm (only on Git tags)
+  - name: 'node:18'
+    id: 'publish'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        if [ "$TAG_NAME" != "" ]; then
+          echo "Git tag detected: $TAG_NAME"
+          echo "Configuring npm authentication..."
+          echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" > ~/.npmrc
+
+          echo "Publishing to npm..."
+          npm publish --access public
+
+          echo "✅ Published wirepusher@$TAG_NAME to npm"
+        else
+          echo "No Git tag detected. Skipping npm publish."
+          echo "To publish, push a Git tag: git tag v1.0.0 && git push origin v1.0.0"
+        fi
+    secretEnv: ['NPM_TOKEN']
+    waitFor: ['verify']
+
+# Secret Manager integration
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/npm-token/versions/latest
+      env: 'NPM_TOKEN'
+
+# Build options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+  dynamic_substitutions: true
+
+# Timeout (10 minutes should be plenty)
+timeout: '600s'
+
+# Build artifacts
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}_cloudbuild/artifacts/javascript-sdk/${BUILD_ID}'
+    paths:
+      - 'dist/**'
+      - 'coverage/**'
+      - 'package.json'
+      - 'README.md'

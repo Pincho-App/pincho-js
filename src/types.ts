@@ -1,0 +1,82 @@
+/**
+ * Configuration options for the WirePusher client.
+ */
+export interface ClientConfig {
+  /**
+   * WirePusher API token (get from app settings).
+   * @example 'wpt_abc123'
+   */
+  token: string;
+
+  /**
+   * WirePusher user ID.
+   * @example 'user123'
+   */
+  userId: string;
+
+  /**
+   * Request timeout in milliseconds.
+   * @default 30000
+   */
+  timeout?: number;
+
+  /**
+   * Custom base URL (mainly for testing).
+   * @default 'https://wirepusher-gateway-1xatwfdc.uc.gateway.dev'
+   */
+  baseUrl?: string;
+}
+
+/**
+ * Notification options for sending a notification.
+ */
+export interface NotificationOptions {
+  /**
+   * Notification title (max 250 characters).
+   */
+  title: string;
+
+  /**
+   * Notification message body (max 10,000 characters).
+   */
+  message: string;
+
+  /**
+   * Optional notification type for filtering/organization (max 50 characters).
+   * @example 'alert'
+   */
+  type?: string;
+
+  /**
+   * Optional tags for flexible organization (max 10 tags, max 50 characters each).
+   * @example ['production', 'critical']
+   */
+  tags?: string[];
+
+  /**
+   * Optional image URL to display with notification (max 2,000 characters).
+   * @example 'https://example.com/image.png'
+   */
+  imageURL?: string;
+
+  /**
+   * Optional URL to open when notification is tapped (max 2,000 characters).
+   * @example 'https://example.com/details'
+   */
+  actionURL?: string;
+}
+
+/**
+ * Response from the WirePusher API.
+ */
+export interface NotificationResponse {
+  /**
+   * Response status (typically 'success' or 'error').
+   */
+  status: string;
+
+  /**
+   * Human-readable response message.
+   */
+  message: string;
+}
