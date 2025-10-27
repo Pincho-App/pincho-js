@@ -30,10 +30,8 @@ npm install wirepusher
 ```typescript
 import { WirePusher } from 'wirepusher';
 
-const client = new WirePusher({
-  token: 'wpt_your_token_here',
-  userId: 'your_user_id',
-});
+// Using user ID for personal notifications
+const client = new WirePusher({ userId: 'your_user_id' });
 
 // Send a simple notification
 await client.send('Build Complete', 'v1.2.3 deployed successfully');
@@ -44,10 +42,8 @@ await client.send('Build Complete', 'v1.2.3 deployed successfully');
 ```javascript
 const { WirePusher } = require('wirepusher');
 
-const client = new WirePusher({
-  token: 'wpt_your_token_here',
-  userId: 'your_user_id',
-});
+// Using user ID for personal notifications
+const client = new WirePusher({ userId: 'your_user_id' });
 
 // Send a simple notification
 client.send('Build Complete', 'v1.2.3 deployed successfully')
@@ -62,10 +58,7 @@ client.send('Build Complete', 'v1.2.3 deployed successfully')
 ```typescript
 import { WirePusher } from 'wirepusher';
 
-const client = new WirePusher({
-  token: 'wpt_your_token_here',
-  userId: 'your_user_id',
-});
+const client = new WirePusher({ userId: 'your_user_id' });
 
 // Basic notification
 await client.send('Hello', 'World!');
@@ -89,10 +82,109 @@ await client.send({
 ```typescript
 const client = new WirePusher({
   token: 'wpt_your_token_here',
-  userId: 'your_user_id',
   timeout: 60000, // 60 seconds (default: 30000)
   baseUrl: 'https://custom-gateway.example.com', // Optional
 });
+```
+
+## Authentication
+
+WirePusher supports two authentication methods for sending notifications:
+
+### Team Tokens (Recommended for Teams)
+
+Team tokens (starting with `wpt_`) send notifications to ALL members of a team.
+
+```typescript
+import { WirePusher } from 'wirepusher';
+
+// Send to all team members
+const client = new WirePusher({ token: 'wpt_abc123xyz...' });
+await client.send('Team Alert', 'Server maintenance in 1 hour');
+```
+
+**Use cases:**
+- Team-wide alerts and announcements
+- Shared project notifications
+- Collaborative workflows
+
+### User ID (Personal Notifications)
+
+User IDs send notifications to a specific user's devices only.
+
+```typescript
+import { WirePusher } from 'wirepusher';
+
+// Send to specific user
+const client = new WirePusher({ userId: 'user_abc123' });
+await client.send('Personal Reminder', 'Your task is due tomorrow');
+```
+
+**Use cases:**
+- Personal notifications
+- User-specific alerts
+- Individual reminders
+
+**Note:** Team tokens and user IDs are mutually exclusive - use one or the other, not both.
+
+## Encrypted Notifications
+
+WirePusher supports AES-128-CBC encryption for secure message delivery. Only the message content is encrypted; metadata (title, type, tags) remains unencrypted for filtering and display.
+
+### Setup
+
+1. Create a notification type in the WirePusher app
+2. Set an encryption password for that type
+3. Use the same password when sending encrypted notifications
+
+### Example
+
+```typescript
+import { WirePusher } from 'wirepusher';
+
+const client = new WirePusher({ userId: 'your_user_id' });
+
+await client.send({
+  title: 'Secure Message',              // Not encrypted (for display)
+  message: 'Sensitive information here', // Encrypted
+  type: 'secure',                        // Must match app type with password
+  encryptionPassword: 'your_password'    // Must match app configuration
+});
+```
+
+### What's Encrypted
+
+- ✅ Message content only
+- ❌ Title, type, tags, imageURL, actionURL (unencrypted for filtering/display)
+
+### Security Notes
+
+- Message content encrypted using AES-128-CBC
+- 16-byte random IV generated for each message
+- Password must match the type configuration in the app
+- Use strong passwords (minimum 12 characters)
+- Store passwords securely (environment variables, secret managers)
+
+### Advanced Encryption Example
+
+```typescript
+import { WirePusher } from 'wirepusher';
+
+// Store password in environment variable
+const encryptionPassword = process.env.WIREPUSHER_ENCRYPTION_PASSWORD;
+
+const client = new WirePusher({ userId: 'your_user_id' });
+
+// Send encrypted notification
+const response = await client.send({
+  title: 'Security Alert',
+  message: 'Unauthorized access attempt detected from IP 192.168.1.100',
+  type: 'security',
+  tags: ['critical', 'security'],
+  encryptionPassword
+});
+
+console.log(`Encrypted notification sent: ${response.status}`);
 ```
 
 ### Error Handling
@@ -135,10 +227,7 @@ import express from 'express';
 import { WirePusher } from 'wirepusher';
 
 const app = express();
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
-});
+const client = new WirePusher({ userId: process.env.WIREPUSHER_USER_ID! });
 
 app.post('/deploy', async (req, res) => {
   try {
@@ -163,10 +252,7 @@ app.post('/deploy', async (req, res) => {
 import { WirePusher } from 'wirepusher';
 import { NextResponse } from 'next/server';
 
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
-});
+const client = new WirePusher({ userId: process.env.WIREPUSHER_USER_ID! });
 
 export async function POST(request: Request) {
   try {
@@ -197,10 +283,12 @@ new WirePusher(config: ClientConfig)
 
 **Parameters:**
 
-- `config.token` (required): Your WirePusher API token (starts with `wpt_`)
-- `config.userId` (required): Your WirePusher user ID
+- `config.token` (optional): Your WirePusher team token (starts with `wpt_`) - mutually exclusive with `userId`
+- `config.userId` (optional): Your WirePusher user ID - mutually exclusive with `token`
 - `config.timeout` (optional): Request timeout in milliseconds (default: 30000)
-- `config.baseUrl` (optional): Custom API gateway URL (default: WirePusher gateway)
+- `config.baseUrl` (optional): Custom API gateway URL (default: https://wirepusher.com)
+
+**Note:** You must specify either `token` OR `userId`, not both.
 
 #### Methods
 
@@ -231,6 +319,7 @@ await client.send(options: NotificationOptions): Promise<NotificationResponse>
 - `tags` (optional): Array of tags for filtering
 - `imageURL` (optional): URL to an image to display
 - `actionURL` (optional): URL to open when notification is tapped
+- `encryptionPassword` (optional): Password for AES-128-CBC encryption (must match type configuration in app)
 
 **Returns:**
 
@@ -255,17 +344,19 @@ Store sensitive credentials in environment variables:
 
 ```bash
 # .env
-WIREPUSHER_TOKEN=wpt_your_token_here
 WIREPUSHER_USER_ID=your_user_id
+# OR for team notifications:
+# WIREPUSHER_TOKEN=wpt_your_token_here
 ```
 
 ```typescript
 import { WirePusher } from 'wirepusher';
 
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
-});
+// Personal notifications
+const client = new WirePusher({ userId: process.env.WIREPUSHER_USER_ID! });
+
+// OR for team notifications:
+// const client = new WirePusher({ token: process.env.WIREPUSHER_TOKEN! });
 ```
 
 ### Reuse Client Instances
@@ -277,7 +368,6 @@ Create a single client instance and reuse it:
 import { WirePusher } from 'wirepusher';
 
 export const notificationClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
   userId: process.env.WIREPUSHER_USER_ID!,
 });
 
@@ -310,14 +400,12 @@ Adjust timeouts based on your needs:
 ```typescript
 // For critical notifications that need to arrive
 const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
   userId: process.env.WIREPUSHER_USER_ID!,
   timeout: 60000, // Wait up to 60 seconds
 });
 
 // For non-critical notifications
 const fastClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
   userId: process.env.WIREPUSHER_USER_ID!,
   timeout: 5000, // Fail fast after 5 seconds
 });

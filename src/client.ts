@@ -1,48 +1,54 @@
 import type { ClientConfig, NotificationOptions, NotificationResponse } from './types.js';
 import { WirePusherError, WirePusherAuthError, WirePusherValidationError } from './errors.js';
+import { encryptMessage, generateIV } from './crypto.js';
 
 /**
  * WirePusher client for sending push notifications via the v1 API.
  *
- * This client uses WirePusher API tokens for authentication, making it ideal for
- * Node.js applications, serverless functions, and backend services.
+ * This client supports both team tokens (for team-wide notifications) and user IDs
+ * (for personal notifications). Token and userId are mutually exclusive.
  *
  * @example
  * ```typescript
  * import { WirePusher } from 'wirepusher';
  *
- * const client = new WirePusher({
- *   token: 'wpt_your_token',
- *   userId: 'your_user_id'
- * });
+ * // Team notifications
+ * const teamClient = new WirePusher({ token: 'wpt_your_token' });
+ * await teamClient.send('Team Alert', 'Server maintenance scheduled');
  *
- * // Simple send
- * await client.send('Build Complete', 'v1.2.3 deployed successfully');
+ * // Personal notifications
+ * const userClient = new WirePusher({ userId: 'your_user_id' });
+ * await userClient.send('Personal Alert', 'Your task is due soon');
  *
- * // With all options
- * await client.send({
- *   title: 'Deploy Complete',
- *   message: 'v1.2.3 deployed to production',
- *   type: 'deployment',
- *   tags: ['production', 'release'],
- *   imageURL: 'https://example.com/success.png',
- *   actionURL: 'https://example.com/deployment/123'
+ * // With all options including encryption
+ * await userClient.send({
+ *   title: 'Secure Message',
+ *   message: 'Sensitive information here',
+ *   type: 'secure',
+ *   tags: ['confidential'],
+ *   encryptionPassword: 'your_password'
  * });
  * ```
  */
 export class WirePusher {
   private readonly baseUrl: string;
-  private readonly token: string;
-  private readonly userId: string;
+  private readonly token: string | undefined;
+  private readonly userId: string | undefined;
   private readonly timeout: number;
 
   constructor(config: ClientConfig) {
-    // Validate required configuration
-    if (!config.token) {
-      throw new WirePusherValidationError('Token is required');
+    // Validate mutual exclusivity
+    if (config.token && config.userId) {
+      throw new WirePusherValidationError(
+        "Cannot specify both 'token' and 'userId' - they are mutually exclusive. " +
+          "Use 'token' for team notifications or 'userId' for personal notifications.",
+      );
     }
-    if (!config.userId) {
-      throw new WirePusherValidationError('User ID is required');
+    if (!config.token && !config.userId) {
+      throw new WirePusherValidationError(
+        "Must specify either 'token' or 'userId'. " +
+          "Use 'token' for team notifications or 'userId' for personal notifications.",
+      );
     }
 
     this.token = config.token;
@@ -78,6 +84,14 @@ export class WirePusher {
    *   tags: ['urgent'],
    *   imageURL: 'https://example.com/img.png'
    * });
+   *
+   * // With encryption
+   * await client.send({
+   *   title: 'Secure Message',
+   *   message: 'Sensitive data',
+   *   type: 'secure',
+   *   encryptionPassword: 'your_password'
+   * });
    * ```
    */
   async send(
@@ -90,28 +104,42 @@ export class WirePusher {
         ? { title: titleOrOptions, message: message as string }
         : titleOrOptions;
 
+    // Handle encryption if password provided
+    let finalMessage = options.message;
+    let ivHex: string | undefined;
+
+    if (options.encryptionPassword) {
+      const [ivBytes, ivHexString] = generateIV();
+      finalMessage = encryptMessage(options.message, options.encryptionPassword, ivBytes);
+      ivHex = ivHexString;
+    }
+
     // Build request body
     const body: {
       title: string;
       message: string;
-      id: string;
-      token: string;
+      id?: string;
+      token?: string;
       type?: string;
       tags?: string[];
       imageURL?: string;
       actionURL?: string;
+      iv?: string;
     } = {
       title: options.title,
-      message: options.message,
-      id: this.userId,
-      token: this.token,
+      message: finalMessage,
     };
+
+    // Add authentication (either token or userId)
+    if (this.token) body.token = this.token;
+    if (this.userId) body.id = this.userId;
 
     // Add optional parameters only if provided
     if (options.type !== undefined) body.type = options.type;
     if (options.tags !== undefined) body.tags = options.tags;
     if (options.imageURL !== undefined) body.imageURL = options.imageURL;
     if (options.actionURL !== undefined) body.actionURL = options.actionURL;
+    if (ivHex !== undefined) body.iv = ivHex;
 
     try {
       // Use AbortController for timeout handling

@@ -3,16 +3,18 @@
  */
 export interface ClientConfig {
   /**
-   * WirePusher API token (get from app settings).
+   * WirePusher team token (mutually exclusive with userId).
+   * Use for team-wide notifications.
    * @example 'wpt_abc123'
    */
-  token: string;
+  token?: string;
 
   /**
-   * WirePusher user ID.
+   * WirePusher user ID (mutually exclusive with token).
+   * Use for personal notifications to a specific user.
    * @example 'user123'
    */
-  userId: string;
+  userId?: string;
 
   /**
    * Request timeout in milliseconds.
@@ -22,7 +24,7 @@ export interface ClientConfig {
 
   /**
    * Custom base URL (mainly for testing).
-   * @default 'https://wirepusher-gateway-1xatwfdc.uc.gateway.dev'
+   * @default 'https://wirepusher.com'
    */
   baseUrl?: string;
 }
@@ -64,6 +66,14 @@ export interface NotificationOptions {
    * @example 'https://example.com/details'
    */
   actionURL?: string;
+
+  /**
+   * Optional password for AES-128-CBC encryption of message content.
+   * Must match the type configuration in the WirePusher app.
+   * Only the message field is encrypted; title, type, and other metadata remain unencrypted.
+   * @example 'your_strong_password'
+   */
+  encryptionPassword?: string;
 }
 
 /**

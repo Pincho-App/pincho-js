@@ -12,36 +12,33 @@ describe('WirePusher', () => {
   });
 
   describe('constructor', () => {
-    it('should create instance with valid config', () => {
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
-
+    it('should create instance with userId only', () => {
+      const client = new WirePusher({ userId: 'user123' });
       expect(client).toBeInstanceOf(WirePusher);
     });
 
-    it('should throw error if token is missing', () => {
+    it('should create instance with token only', () => {
+      const client = new WirePusher({ token: 'wpt_test123' });
+      expect(client).toBeInstanceOf(WirePusher);
+    });
+
+    it('should throw error if both token and userId provided', () => {
       expect(() => {
         new WirePusher({
-          token: '',
+          token: 'wpt_test123',
           userId: 'user123',
         });
       }).toThrow(WirePusherValidationError);
     });
 
-    it('should throw error if userId is missing', () => {
+    it('should throw error if neither token nor userId provided', () => {
       expect(() => {
-        new WirePusher({
-          token: 'wpt_test123',
-          userId: '',
-        });
+        new WirePusher({});
       }).toThrow(WirePusherValidationError);
     });
 
     it('should use custom timeout if provided', () => {
       const client = new WirePusher({
-        token: 'wpt_test123',
         userId: 'user123',
         timeout: 60000,
       });
@@ -51,7 +48,6 @@ describe('WirePusher', () => {
 
     it('should use custom base URL if provided', () => {
       const client = new WirePusher({
-        token: 'wpt_test123',
         userId: 'user123',
         baseUrl: 'https://custom.example.com',
       });
@@ -67,10 +63,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       const response = await client.send('Test Title', 'Test message');
 
@@ -85,10 +78,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       const response = await client.send({
         title: 'Test Title',
@@ -121,7 +111,6 @@ describe('WirePusher', () => {
 
       const client = new WirePusher({
         token: 'invalid_token',
-        userId: 'user123',
       });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherAuthError);
@@ -137,10 +126,7 @@ describe('WirePusher', () => {
         json: async () => ({ message: 'Account disabled' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherAuthError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Forbidden/);
@@ -156,10 +142,7 @@ describe('WirePusher', () => {
         text: async () => 'Title is required',
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('', 'Message')).rejects.toThrow(WirePusherValidationError);
       await expect(client.send('', 'Message')).rejects.toThrow(/Invalid parameters/);
@@ -175,7 +158,6 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
-        token: 'wpt_test123',
         userId: 'invalid_user',
       });
 
@@ -192,10 +174,7 @@ describe('WirePusher', () => {
         json: async () => ({ message: 'Server error' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/API error \(500\)/);
@@ -210,10 +189,7 @@ describe('WirePusher', () => {
         text: async () => 'Internal server error',
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Internal server error/);
     });
@@ -230,10 +206,7 @@ describe('WirePusher', () => {
         text: async () => 'Malformed response',
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
     });
@@ -241,10 +214,7 @@ describe('WirePusher', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Network error/);
@@ -256,7 +226,6 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
-        token: 'wpt_test123',
         userId: 'user123',
         timeout: 1000,
       });
@@ -268,10 +237,7 @@ describe('WirePusher', () => {
     it('should handle non-Error throws gracefully', async () => {
       mockFetch.mockRejectedValue('string error');
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Unexpected error/);
@@ -283,10 +249,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await client.send({
         title: 'Test',
@@ -300,7 +263,7 @@ describe('WirePusher', () => {
       expect(body.title).toBe('Test');
       expect(body.message).toBe('Message');
       expect(body.id).toBe('user123');
-      expect(body.token).toBe('wpt_test123');
+      expect(body.token).toBeUndefined();
       expect(body.type).toBeUndefined();
       expect(body.tags).toBeUndefined();
       expect(body.imageURL).toBeUndefined();
@@ -313,10 +276,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({
-        token: 'wpt_test123',
-        userId: 'user123',
-      });
+      const client = new WirePusher({ userId: 'user123' });
 
       await client.send('Test', 'Message');
 
@@ -333,7 +293,6 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
-        token: 'wpt_test123',
         userId: 'user123',
         baseUrl: 'https://custom.example.com',
       });
