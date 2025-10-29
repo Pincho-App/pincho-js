@@ -8,6 +8,8 @@ import { encryptMessage, generateIV } from './crypto.js';
  * This client supports both team tokens (for team-wide notifications) and user IDs
  * (for personal notifications). Token and userId are mutually exclusive.
  *
+ * @deprecated userId parameter - Legacy authentication. Use token parameter instead.
+ *
  * @example
  * ```typescript
  * import { WirePusher } from 'wirepusher';
@@ -16,7 +18,7 @@ import { encryptMessage, generateIV } from './crypto.js';
  * const teamClient = new WirePusher({ token: 'wpt_your_token' });
  * await teamClient.send('Team Alert', 'Server maintenance scheduled');
  *
- * // Personal notifications
+ * // Personal notifications (deprecated - use token instead)
  * const userClient = new WirePusher({ userId: 'your_user_id' });
  * await userClient.send('Personal Alert', 'Your task is due soon');
  *

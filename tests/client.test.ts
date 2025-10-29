@@ -302,5 +302,97 @@ describe('WirePusher', () => {
       const call = mockFetch.mock.calls[0]!;
       expect(call[0]).toBe('https://custom.example.com/send');
     });
+
+    it('should encrypt message when encryptionPassword provided', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ userId: 'user123' });
+
+      await client.send({
+        title: 'Secure Message',
+        message: 'Sensitive information here',
+        type: 'secure',
+        encryptionPassword: 'test_password_123',
+      });
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      // Title should NOT be encrypted
+      expect(body.title).toBe('Secure Message');
+      expect(body.type).toBe('secure');
+
+      // Message should be encrypted (different from original)
+      expect(body.message).not.toBe('Sensitive information here');
+
+      // Should include IV for decryption
+      expect(body.iv).toBeDefined();
+      expect(typeof body.iv).toBe('string');
+      expect(body.iv.length).toBe(32); // 16 bytes as hex
+
+      // Encrypted message should not contain standard Base64 chars
+      expect(body.message).not.toMatch(/[+/=]/);
+    });
+
+    it('should not encrypt when encryptionPassword not provided', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ userId: 'user123' });
+
+      await client.send({
+        title: 'Regular Message',
+        message: 'Not encrypted',
+        type: 'info',
+      });
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      // Message should NOT be encrypted
+      expect(body.message).toBe('Not encrypted');
+
+      // Should NOT include IV
+      expect(body.iv).toBeUndefined();
+    });
+
+    it('should use token authentication when provided', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'wpt_test123' });
+
+      await client.send('Test', 'Message');
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      expect(body.token).toBe('wpt_test123');
+      expect(body.id).toBeUndefined();
+    });
+
+    it('should use userId authentication when provided', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ userId: 'user123' });
+
+      await client.send('Test', 'Message');
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      expect(body.id).toBe('user123');
+      expect(body.token).toBeUndefined();
+    });
   });
 });

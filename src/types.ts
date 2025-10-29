@@ -12,6 +12,7 @@ export interface ClientConfig {
   /**
    * WirePusher user ID (mutually exclusive with token).
    * Use for personal notifications to a specific user.
+   * @deprecated Legacy authentication. Use token parameter instead.
    * @example 'user123'
    */
   userId?: string;
