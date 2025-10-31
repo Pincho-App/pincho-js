@@ -17,7 +17,7 @@ import {
 // This client instance is reused across requests
 const notificationClient = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
+  deviceId: process.env.WIREPUSHER_DEVICE_ID!,
   timeout: 30000,
 });
 
@@ -112,7 +112,7 @@ import { WirePusher, WirePusherError } from 'wirepusher';
 
 const notificationClient = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
+  deviceId: process.env.WIREPUSHER_DEVICE_ID!,
 });
 
 export default async function handler(
@@ -174,7 +174,7 @@ import { WirePusher } from 'wirepusher';
 
 const notificationClient = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!,
+  deviceId: process.env.WIREPUSHER_DEVICE_ID!,
 });
 
 export async function sendNotification(formData: FormData) {

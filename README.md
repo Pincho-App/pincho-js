@@ -116,7 +116,7 @@ await client.send({
 
 **Constructor Parameters:**
 - `token` (string, required): Your WirePusher token (starts with `wpu_` or `wpt_`)
-- `userId` (string, optional): Legacy user ID (deprecated, use token instead)
+- `deviceId` (string, optional): Legacy device ID (deprecated, use token instead)
 - `timeout` (number, optional): Request timeout in milliseconds (default: 30000)
 - `baseUrl` (string, optional): Custom base URL for testing
 
