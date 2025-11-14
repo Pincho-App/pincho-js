@@ -1,5 +1,5 @@
 /**
- * WirePusher SDK for JavaScript and TypeScript.
+ * WirePusher Client Library for JavaScript and TypeScript.
  *
  * Official SDK for WirePusher push notifications API.
  *

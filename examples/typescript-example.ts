@@ -1,7 +1,7 @@
 /**
  * TypeScript Example
  *
- * This example demonstrates type-safe usage of the WirePusher SDK.
+ * This example demonstrates type-safe usage of the WirePusher Client Library.
  * Shows proper error handling with custom error types.
  */
 

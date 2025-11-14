@@ -1,5 +1,5 @@
 /**
- * Base error class for all WirePusher SDK errors.
+ * Base error class for all WirePusher Client Library errors.
  */
 export class WirePusherError extends Error {
   constructor(message: string) {

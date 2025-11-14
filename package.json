@@ -1,7 +1,7 @@
 {
-  "name": "wirepusher",
+  "name": "@wirepusher/client",
   "version": "1.0.0",
-  "description": "Official WirePusher SDK for JavaScript and TypeScript",
+  "description": "Official WirePusher Client Library for JavaScript and TypeScript",
   "keywords": [
     "wirepusher",
     "push-notifications",
@@ -14,11 +14,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/wirepusher/javascript-sdk.git"
+    "url": "https://gitlab.com/wirepusher/wirepusher-js.git"
   },
-  "homepage": "https://gitlab.com/wirepusher/javascript-sdk",
+  "homepage": "https://gitlab.com/wirepusher/wirepusher-js",
   "bugs": {
-    "url": "https://gitlab.com/wirepusher/javascript-sdk/-/issues"
+    "url": "https://gitlab.com/wirepusher/wirepusher-js/-/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

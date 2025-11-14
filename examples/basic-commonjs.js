@@ -1,7 +1,7 @@
 /**
  * Basic CommonJS Example
  *
- * This example shows how to use WirePusher SDK in a CommonJS environment.
+ * This example shows how to use WirePusher Client Library in a CommonJS environment.
  * Suitable for traditional Node.js applications.
  */
 

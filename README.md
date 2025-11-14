@@ -1,9 +1,9 @@
-# WirePusher JavaScript SDK
+# WirePusher JavaScript Client Library
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/wirepusher.svg)](https://www.npmjs.com/package/wirepusher)
 
-Official JavaScript/TypeScript SDK for [WirePusher](https://wirepusher.dev) push notifications.
+Official JavaScript/TypeScript Client Library for [WirePusher](https://wirepusher.dev) push notifications.
 
 ## Features
 
@@ -282,7 +282,7 @@ export async function POST(request: Request) {
 
 ```bash
 # Clone repository
-git clone https://gitlab.com/wirepusher/javascript-sdk.git
+git clone https://gitlab.com/wirepusher/wirepusher-js.git
 cd javascript-sdk
 
 # Install dependencies
@@ -315,8 +315,8 @@ npm run format
 ## Links
 
 - **Documentation**: https://wirepusher.dev/help
-- **Repository**: https://gitlab.com/wirepusher/javascript-sdk
-- **Issues**: https://gitlab.com/wirepusher/javascript-sdk/-/issues
+- **Repository**: https://gitlab.com/wirepusher/wirepusher-js
+- **Issues**: https://gitlab.com/wirepusher/wirepusher-js/-/issues
 - **npm**: https://www.npmjs.com/package/wirepusher
 
 ## License

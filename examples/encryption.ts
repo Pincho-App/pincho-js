@@ -1,7 +1,7 @@
 /**
  * Encryption Example
  *
- * Demonstrates how to send encrypted notifications using the WirePusher SDK.
+ * Demonstrates how to send encrypted notifications using the WirePusher Client Library.
  * Only the message content is encrypted; title, type, and other metadata remain unencrypted.
  */
 

@@ -1,6 +1,6 @@
-# WirePusher SDK Examples
+# WirePusher Client Library Examples
 
-This directory contains practical examples demonstrating how to use the WirePusher JavaScript SDK in different environments.
+This directory contains practical examples demonstrating how to use the WirePusher JavaScript Client Library in different environments.
 
 ## Prerequisites
 
@@ -286,5 +286,5 @@ npm install -D @types/node
 
 ## Questions or Issues?
 
-- Open an issue: https://gitlab.com/wirepusher/javascript-sdk/-/issues
+- Open an issue: https://gitlab.com/wirepusher/wirepusher-js/-/issues
 - Email: support@wirepusher.com
