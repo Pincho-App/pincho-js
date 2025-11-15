@@ -32,7 +32,7 @@ export class WirePusher {
   constructor(config: ClientConfig) {
     this.token = config.token;
     this.timeout = config.timeout ?? 30000;
-    this.baseUrl = config.baseUrl ?? 'https://wirepusher.com';
+    this.baseUrl = config.baseUrl ?? 'https://api.wirepusher.dev';
   }
 
   /**
