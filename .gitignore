@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-package-lock.json
+# Lock files (keep package-lock.json for reproducible CI builds)
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
