@@ -1,10 +1,44 @@
 /**
- * Base error class for all WirePusher SDK errors.
+ * Error codes for WirePusher API errors.
+ */
+export enum ErrorCode {
+  /** Generic/unknown error */
+  UNKNOWN = 'UNKNOWN',
+  /** Network-related errors */
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  /** Request timeout */
+  TIMEOUT = 'TIMEOUT',
+  /** Authentication failed (invalid token/device ID) */
+  AUTH_INVALID = 'AUTH_INVALID',
+  /** Permission denied (forbidden) */
+  AUTH_FORBIDDEN = 'AUTH_FORBIDDEN',
+  /** Validation error (invalid parameters) */
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  /** Resource not found (device not found) */
+  NOT_FOUND = 'NOT_FOUND',
+  /** Server error (5xx responses) */
+  SERVER_ERROR = 'SERVER_ERROR',
+}
+
+/**
+ * Base error class for all WirePusher Client Library errors.
  */
 export class WirePusherError extends Error {
-  constructor(message: string) {
+  /**
+   * Machine-readable error code.
+   */
+  public readonly code: ErrorCode;
+
+  /**
+   * Whether the error is retryable (e.g., network errors, timeouts).
+   */
+  public readonly isRetryable: boolean;
+
+  constructor(message: string, code: ErrorCode = ErrorCode.UNKNOWN, isRetryable = false) {
     super(message);
     this.name = 'WirePusherError';
+    this.code = code;
+    this.isRetryable = isRetryable;
     // Maintains proper stack trace for where the error was thrown
     Error.captureStackTrace(this, this.constructor);
     // Set the prototype explicitly for proper instanceof checks
@@ -22,8 +56,8 @@ export class WirePusherError extends Error {
  * - The account is disabled
  */
 export class WirePusherAuthError extends WirePusherError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, code: ErrorCode = ErrorCode.AUTH_INVALID, isRetryable = false) {
+    super(message, code, isRetryable);
     this.name = 'WirePusherAuthError';
     Object.setPrototypeOf(this, WirePusherAuthError.prototype);
   }
@@ -39,8 +73,8 @@ export class WirePusherAuthError extends WirePusherError {
  * - The user is not found
  */
 export class WirePusherValidationError extends WirePusherError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, code: ErrorCode = ErrorCode.VALIDATION_ERROR, isRetryable = false) {
+    super(message, code, isRetryable);
     this.name = 'WirePusherValidationError';
     Object.setPrototypeOf(this, WirePusherValidationError.prototype);
   }

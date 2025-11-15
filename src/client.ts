@@ -1,14 +1,15 @@
 import type { ClientConfig, NotificationOptions, NotificationResponse } from './types.js';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError } from './errors.js';
+import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
+import { normalizeTags } from './utils.js';
 
 /**
  * WirePusher client for sending push notifications via the v1 API.
  *
- * This client supports both team tokens (for team-wide notifications) and user IDs
- * (for personal notifications). Token and userId are mutually exclusive.
+ * This client supports both team tokens (for team-wide notifications) and device IDs
+ * (for personal notifications). Token and deviceId are mutually exclusive.
  *
- * @deprecated userId parameter - Legacy authentication. Use token parameter instead.
+ * @deprecated deviceId parameter - Legacy authentication. Use token parameter instead.
  *
  * @example
  * ```typescript
@@ -19,11 +20,11 @@ import { encryptMessage, generateIV } from './crypto.js';
  * await teamClient.send('Team Alert', 'Server maintenance scheduled');
  *
  * // Personal notifications (deprecated - use token instead)
- * const userClient = new WirePusher({ userId: 'your_user_id' });
- * await userClient.send('Personal Alert', 'Your task is due soon');
+ * const deviceClient = new WirePusher({ deviceId: 'your_device_id' });
+ * await deviceClient.send('Personal Alert', 'Your task is due soon');
  *
  * // With all options including encryption
- * await userClient.send({
+ * await deviceClient.send({
  *   title: 'Secure Message',
  *   message: 'Sensitive information here',
  *   type: 'secure',
@@ -35,26 +36,26 @@ import { encryptMessage, generateIV } from './crypto.js';
 export class WirePusher {
   private readonly baseUrl: string;
   private readonly token: string | undefined;
-  private readonly userId: string | undefined;
+  private readonly deviceId: string | undefined;
   private readonly timeout: number;
 
   constructor(config: ClientConfig) {
     // Validate mutual exclusivity
-    if (config.token && config.userId) {
+    if (config.token && config.deviceId) {
       throw new WirePusherValidationError(
-        "Cannot specify both 'token' and 'userId' - they are mutually exclusive. " +
-          "Use 'token' for team notifications or 'userId' for personal notifications.",
+        "Cannot specify both 'token' and 'deviceId' - they are mutually exclusive. " +
+          "Use 'token' for team notifications or 'deviceId' for personal notifications.",
       );
     }
-    if (!config.token && !config.userId) {
+    if (!config.token && !config.deviceId) {
       throw new WirePusherValidationError(
-        "Must specify either 'token' or 'userId'. " +
-          "Use 'token' for team notifications or 'userId' for personal notifications.",
+        "Must specify either 'token' or 'deviceId'. " +
+          "Use 'token' for team notifications or 'deviceId' for personal notifications.",
       );
     }
 
     this.token = config.token;
-    this.userId = config.userId;
+    this.deviceId = config.deviceId;
     this.timeout = config.timeout ?? 30000;
     this.baseUrl = config.baseUrl ?? 'https://wirepusher.com';
   }
@@ -116,6 +117,9 @@ export class WirePusher {
       ivHex = ivHexString;
     }
 
+    // Normalize tags if provided
+    const normalizedTags = options.tags ? normalizeTags(options.tags) : undefined;
+
     // Build request body
     const body: {
       title: string;
@@ -132,13 +136,13 @@ export class WirePusher {
       message: finalMessage,
     };
 
-    // Add authentication (either token or userId)
+    // Add authentication (either token or deviceId)
     if (this.token) body.token = this.token;
-    if (this.userId) body.id = this.userId;
+    if (this.deviceId) body.id = this.deviceId;
 
     // Add optional parameters only if provided
     if (options.type !== undefined) body.type = options.type;
-    if (options.tags !== undefined) body.tags = options.tags;
+    if (normalizedTags !== undefined && normalizedTags.length > 0) body.tags = normalizedTags;
     if (options.imageURL !== undefined) body.imageURL = options.imageURL;
     if (options.actionURL !== undefined) body.actionURL = options.actionURL;
     if (ivHex !== undefined) body.iv = ivHex;
@@ -175,16 +179,16 @@ export class WirePusher {
 
       // Handle timeout errors
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new WirePusherError(`Request timeout after ${this.timeout}ms`);
+        throw new WirePusherError(`Request timeout after ${this.timeout}ms`, ErrorCode.TIMEOUT, true);
       }
 
       // Handle other network errors
       if (error instanceof Error) {
-        throw new WirePusherError(`Network error: ${error.message}`);
+        throw new WirePusherError(`Network error: ${error.message}`, ErrorCode.NETWORK_ERROR, true);
       }
 
       // Fallback for unknown errors
-      throw new WirePusherError(`Unexpected error: ${String(error)}`);
+      throw new WirePusherError(`Unexpected error: ${String(error)}`, ErrorCode.UNKNOWN, false);
     }
   }
 
@@ -202,8 +206,29 @@ export class WirePusher {
     try {
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/json')) {
-        const errorData = (await response.json()) as { message?: string };
-        errorMessage = errorData.message ?? response.statusText;
+        const errorData = (await response.json()) as {
+          message?: string;
+          error?: {
+            type?: string;
+            code?: string;
+            message?: string;
+            param?: string;
+          };
+        };
+
+        // Parse nested error format: { error: { message, code, type, param } }
+        const errorObj = errorData.error || {};
+        errorMessage = errorObj.message || 'Unknown error';
+
+        // Append parameter context if available
+        if (errorObj.param) {
+          errorMessage = `${errorMessage} (parameter: ${errorObj.param})`;
+        }
+
+        // Append error code if available
+        if (errorObj.code) {
+          errorMessage = `${errorMessage} [${errorObj.code}]`;
+        }
       } else {
         errorMessage = await response.text();
       }
@@ -216,18 +241,44 @@ export class WirePusher {
     switch (response.status) {
       case 401:
         throw new WirePusherAuthError(
-          'Invalid token or user ID. Please check your credentials.',
+          'Invalid token or device ID. Please check your credentials.',
+          ErrorCode.AUTH_INVALID,
+          false,
         );
       case 403:
         throw new WirePusherAuthError(
           "Forbidden: Your account may be disabled or you don't have permission.",
+          ErrorCode.AUTH_FORBIDDEN,
+          false,
         );
       case 400:
-        throw new WirePusherValidationError(`Invalid parameters: ${errorMessage}`);
+        throw new WirePusherValidationError(
+          `Invalid parameters: ${errorMessage}`,
+          ErrorCode.VALIDATION_ERROR,
+          false,
+        );
       case 404:
-        throw new WirePusherValidationError('User not found. Please check your user ID.');
+        throw new WirePusherValidationError(
+          'Device not found. Please check your device ID.',
+          ErrorCode.NOT_FOUND,
+          false,
+        );
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        // Server errors are retryable
+        throw new WirePusherError(
+          `API error (${response.status}): ${errorMessage}`,
+          ErrorCode.SERVER_ERROR,
+          true,
+        );
       default:
-        throw new WirePusherError(`API error (${response.status}): ${errorMessage}`);
+        throw new WirePusherError(
+          `API error (${response.status}): ${errorMessage}`,
+          ErrorCode.UNKNOWN,
+          false,
+        );
     }
   }
 }

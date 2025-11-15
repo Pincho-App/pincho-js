@@ -1,7 +1,7 @@
 /**
  * TypeScript Example
  *
- * This example demonstrates type-safe usage of the WirePusher SDK.
+ * This example demonstrates type-safe usage of the WirePusher Client Library.
  * Shows proper error handling with custom error types.
  */
 
@@ -17,7 +17,7 @@ import {
 // Initialize the client with type safety
 const client = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN || 'wpt_your_token_here',
-  userId: process.env.WIREPUSHER_USER_ID || 'your_user_id',
+  deviceId: process.env.WIREPUSHER_DEVICE_ID || 'your_device_id',
   timeout: 30000, // Optional: custom timeout
 });
 
@@ -57,7 +57,7 @@ async function sendAdvancedNotification(): Promise<void> {
 function handleError(error: unknown): void {
   if (error instanceof WirePusherAuthError) {
     console.error('❌ Authentication failed:', error.message);
-    console.error('   Please check your token and user ID');
+    console.error('   Please check your token and device ID');
     // Handle auth errors - maybe refresh credentials
   } else if (error instanceof WirePusherValidationError) {
     console.error('❌ Validation error:', error.message);

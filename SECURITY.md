@@ -53,7 +53,7 @@ After you submit a report:
 
 ### For Users
 
-When using the WirePusher JavaScript SDK:
+When using the WirePusher JavaScript Client Library:
 
 1. **Keep the SDK updated** to the latest version
 2. **Never commit credentials** to version control

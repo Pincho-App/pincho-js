@@ -1,6 +1,6 @@
-# Contributing to WirePusher JavaScript SDK
+# Contributing to WirePusher JavaScript Client Library
 
-Thank you for your interest in contributing to the WirePusher JavaScript SDK! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the WirePusher JavaScript Client Library! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -25,7 +25,7 @@ Before creating bug reports, please check the existing issues to avoid duplicate
 ## Bug: Client throws TypeError on successful response
 
 **Environment:**
-- WirePusher SDK: 1.0.0
+- WirePusher Client Library: 1.0.0
 - Node.js: 18.17.0
 - OS: macOS 13.4
 
@@ -84,7 +84,7 @@ Enhancement suggestions are tracked as GitLab issues. When creating an enhanceme
 
 1. **Clone the repository:**
    ```bash
-   git clone https://gitlab.com/wirepusher/javascript-sdk.git
+   git clone https://gitlab.com/wirepusher/wirepusher-js.git
    cd javascript-sdk
    ```
 
@@ -332,7 +332,7 @@ test(client): add tests for timeout handling
 
 ## Getting Help
 
-- **GitLab Issues:** https://gitlab.com/wirepusher/javascript-sdk/-/issues
+- **GitLab Issues:** https://gitlab.com/wirepusher/wirepusher-js/-/issues
 - **Email:** support@wirepusher.com
 - **Documentation:** https://wirepusher.com/api
 

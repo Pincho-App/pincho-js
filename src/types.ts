@@ -3,19 +3,19 @@
  */
 export interface ClientConfig {
   /**
-   * WirePusher team token (mutually exclusive with userId).
+   * WirePusher team token (mutually exclusive with deviceId).
    * Use for team-wide notifications.
    * @example 'wpt_abc123'
    */
   token?: string;
 
   /**
-   * WirePusher user ID (mutually exclusive with token).
-   * Use for personal notifications to a specific user.
+   * WirePusher device ID (mutually exclusive with token).
+   * Use for personal notifications to a specific device.
    * @deprecated Legacy authentication. Use token parameter instead.
-   * @example 'user123'
+   * @example 'device123'
    */
-  userId?: string;
+  deviceId?: string;
 
   /**
    * Request timeout in milliseconds.

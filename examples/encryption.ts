@@ -1,19 +1,19 @@
 /**
  * Encryption Example
  *
- * Demonstrates how to send encrypted notifications using the WirePusher SDK.
+ * Demonstrates how to send encrypted notifications using the WirePusher Client Library.
  * Only the message content is encrypted; title, type, and other metadata remain unencrypted.
  */
 
 import { WirePusher } from '../src/index.js';
 
 // Configuration
-const USER_ID = process.env.WIREPUSHER_USER_ID || 'your_user_id';
+const DEVICE_ID = process.env.WIREPUSHER_DEVICE_ID || 'your_device_id';
 const ENCRYPTION_PASSWORD = process.env.WIREPUSHER_ENCRYPTION_PASSWORD || 'your_secure_password';
 
 async function main() {
   // Create client
-  const client = new WirePusher({ userId: USER_ID });
+  const client = new WirePusher({ deviceId: DEVICE_ID });
 
   console.log('🔐 WirePusher Encryption Example\n');
 

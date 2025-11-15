@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the WirePusher JavaScript SDK will be documented in this file.
+All notable changes to the WirePusher JavaScript Client Library will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of WirePusher JavaScript/TypeScript SDK
+- Initial release of WirePusher JavaScript/TypeScript Client Library
 - Full TypeScript support with comprehensive type definitions
 - Zero-dependency implementation using native fetch API (Node.js 18+)
 - Dual package support (CommonJS and ES Modules)
@@ -98,6 +98,6 @@ We follow [Semantic Versioning](https://semver.org/):
 ## Links
 
 - [npm Package](https://www.npmjs.com/package/wirepusher)
-- [GitLab Repository](https://gitlab.com/wirepusher/javascript-sdk)
-- [Issue Tracker](https://gitlab.com/wirepusher/javascript-sdk/-/issues)
+- [GitLab Repository](https://gitlab.com/wirepusher/wirepusher-js)
+- [Issue Tracker](https://gitlab.com/wirepusher/wirepusher-js/-/issues)
 - [WirePusher API Documentation](https://wirepusher.com/api)

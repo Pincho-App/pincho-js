@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError } from '../src/errors.js';
+import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from '../src/errors.js';
 
 describe('Error Classes', () => {
   describe('WirePusherError', () => {
@@ -84,6 +84,83 @@ describe('Error Classes', () => {
       expect(authError instanceof WirePusherError).toBe(true);
       expect(validationError instanceof WirePusherError).toBe(true);
       expect(baseError instanceof WirePusherError).toBe(true);
+    });
+  });
+
+  describe('Error codes', () => {
+    it('should have default error code UNKNOWN for WirePusherError', () => {
+      const error = new WirePusherError('Test error');
+      expect(error.code).toBe(ErrorCode.UNKNOWN);
+    });
+
+    it('should accept custom error code', () => {
+      const error = new WirePusherError('Network error', ErrorCode.NETWORK_ERROR);
+      expect(error.code).toBe(ErrorCode.NETWORK_ERROR);
+    });
+
+    it('should have default error code AUTH_INVALID for WirePusherAuthError', () => {
+      const error = new WirePusherAuthError('Auth failed');
+      expect(error.code).toBe(ErrorCode.AUTH_INVALID);
+    });
+
+    it('should accept custom error code for WirePusherAuthError', () => {
+      const error = new WirePusherAuthError('Forbidden', ErrorCode.AUTH_FORBIDDEN);
+      expect(error.code).toBe(ErrorCode.AUTH_FORBIDDEN);
+    });
+
+    it('should have default error code VALIDATION_ERROR for WirePusherValidationError', () => {
+      const error = new WirePusherValidationError('Invalid params');
+      expect(error.code).toBe(ErrorCode.VALIDATION_ERROR);
+    });
+
+    it('should accept custom error code for WirePusherValidationError', () => {
+      const error = new WirePusherValidationError('Not found', ErrorCode.NOT_FOUND);
+      expect(error.code).toBe(ErrorCode.NOT_FOUND);
+    });
+  });
+
+  describe('isRetryable property', () => {
+    it('should default to false for WirePusherError', () => {
+      const error = new WirePusherError('Test error');
+      expect(error.isRetryable).toBe(false);
+    });
+
+    it('should be true when set for network errors', () => {
+      const error = new WirePusherError('Network error', ErrorCode.NETWORK_ERROR, true);
+      expect(error.isRetryable).toBe(true);
+    });
+
+    it('should be true when set for timeout errors', () => {
+      const error = new WirePusherError('Timeout', ErrorCode.TIMEOUT, true);
+      expect(error.isRetryable).toBe(true);
+    });
+
+    it('should be false for auth errors', () => {
+      const error = new WirePusherAuthError('Auth failed');
+      expect(error.isRetryable).toBe(false);
+    });
+
+    it('should be false for validation errors', () => {
+      const error = new WirePusherValidationError('Invalid params');
+      expect(error.isRetryable).toBe(false);
+    });
+
+    it('should be true when set for server errors', () => {
+      const error = new WirePusherError('Server error', ErrorCode.SERVER_ERROR, true);
+      expect(error.isRetryable).toBe(true);
+    });
+  });
+
+  describe('ErrorCode enum', () => {
+    it('should have all expected error codes', () => {
+      expect(ErrorCode.UNKNOWN).toBe('UNKNOWN');
+      expect(ErrorCode.NETWORK_ERROR).toBe('NETWORK_ERROR');
+      expect(ErrorCode.TIMEOUT).toBe('TIMEOUT');
+      expect(ErrorCode.AUTH_INVALID).toBe('AUTH_INVALID');
+      expect(ErrorCode.AUTH_FORBIDDEN).toBe('AUTH_FORBIDDEN');
+      expect(ErrorCode.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
+      expect(ErrorCode.NOT_FOUND).toBe('NOT_FOUND');
+      expect(ErrorCode.SERVER_ERROR).toBe('SERVER_ERROR');
     });
   });
 });
