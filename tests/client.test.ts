@@ -556,4 +556,169 @@ describe('WirePusher', () => {
       }
     });
   });
+
+  describe('notifai', () => {
+    it('should send notifai request successfully', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 'success',
+          message: 'Notification received successfully',
+          summary: {
+            title: 'Deploy Complete - v2.1.3',
+            message: 'API v2.1.3 deployed successfully to production.',
+            tags: ['deploy', 'production'],
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345' });
+
+      const response = await client.notifai('deployment finished successfully, v2.1.3 is live on prod');
+
+      expect(response.status).toBe('success');
+      expect(response.summary?.title).toBe('Deploy Complete - v2.1.3');
+      expect(response.summary?.tags).toEqual(['deploy', 'production']);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const call = mockFetch.mock.calls[0]!;
+      expect(call[0]).toBe('https://api.wirepusher.dev/notifai');
+      expect(call[1]?.headers).toHaveProperty('Authorization', 'Bearer abc12345');
+    });
+
+    it('should send notifai request with type parameter', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 'success',
+          message: 'Notification received successfully',
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345' });
+
+      await client.notifai('test notification', 'alert');
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      expect(body.text).toBe('test notification');
+      expect(body.type).toBe('alert');
+    });
+
+    it('should handle 401 authentication error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'authentication_error',
+            code: 'invalid_token',
+            message: 'Invalid token',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'invalid' });
+
+      try {
+        await client.notifai('test');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherAuthError);
+        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_INVALID);
+      }
+    });
+
+    it('should handle 400 validation error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'validation_error',
+            code: 'text_too_short',
+            message: 'Text must be at least 5 characters',
+            param: 'text',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345' });
+
+      try {
+        await client.notifai('hi');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherValidationError);
+        expect((error as WirePusherValidationError).message).toContain('Text must be at least 5 characters');
+      }
+    });
+
+    it('should handle 500 server error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'server_error',
+            code: 'internal_error',
+            message: 'Server error',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345' });
+
+      try {
+        await client.notifai('test message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.SERVER_ERROR);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+      }
+    });
+
+    it('should handle network errors', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      const client = new WirePusher({ token: 'abc12345' });
+
+      try {
+        await client.notifai('test message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.NETWORK_ERROR);
+        expect((error as WirePusherError).message).toContain('Network error');
+      }
+    });
+
+    it('should handle timeout errors', async () => {
+      const abortError = new Error('The operation was aborted');
+      abortError.name = 'AbortError';
+      mockFetch.mockRejectedValue(abortError);
+
+      const client = new WirePusher({
+        token: 'abc12345',
+        timeout: 1000,
+      });
+
+      try {
+        await client.notifai('test message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.TIMEOUT);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+      }
+    });
+  });
 });
