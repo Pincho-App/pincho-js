@@ -297,30 +297,6 @@ describe('WirePusher', () => {
       }
     });
 
-    it('should handle legacy error format without nested error object', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          message: 'Legacy error message',
-        }),
-      });
-
-      const client = new WirePusher({ deviceId: 'device123' });
-
-      try {
-        await client.send('Test', 'Message');
-        expect.fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherValidationError);
-        const err = error as WirePusherValidationError;
-        // Should still extract message from legacy format
-        expect(err.message).toContain('Legacy error message');
-      }
-    });
-
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 

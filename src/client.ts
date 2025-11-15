@@ -218,7 +218,7 @@ export class WirePusher {
 
         // Parse nested error format: { error: { message, code, type, param } }
         const errorObj = errorData.error || {};
-        errorMessage = errorObj.message || errorData.message || response.statusText;
+        errorMessage = errorObj.message || 'Unknown error';
 
         // Append parameter context if available
         if (errorObj.param) {
