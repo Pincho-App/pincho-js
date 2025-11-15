@@ -1,6 +1,7 @@
 import type { ClientConfig, NotificationOptions, NotificationResponse } from './types.js';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError } from './errors.js';
+import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
+import { normalizeTags } from './utils.js';
 
 /**
  * WirePusher client for sending push notifications via the v1 API.
@@ -116,6 +117,9 @@ export class WirePusher {
       ivHex = ivHexString;
     }
 
+    // Normalize tags if provided
+    const normalizedTags = options.tags ? normalizeTags(options.tags) : undefined;
+
     // Build request body
     const body: {
       title: string;
@@ -138,7 +142,7 @@ export class WirePusher {
 
     // Add optional parameters only if provided
     if (options.type !== undefined) body.type = options.type;
-    if (options.tags !== undefined) body.tags = options.tags;
+    if (normalizedTags !== undefined && normalizedTags.length > 0) body.tags = normalizedTags;
     if (options.imageURL !== undefined) body.imageURL = options.imageURL;
     if (options.actionURL !== undefined) body.actionURL = options.actionURL;
     if (ivHex !== undefined) body.iv = ivHex;
@@ -175,16 +179,16 @@ export class WirePusher {
 
       // Handle timeout errors
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new WirePusherError(`Request timeout after ${this.timeout}ms`);
+        throw new WirePusherError(`Request timeout after ${this.timeout}ms`, ErrorCode.TIMEOUT, true);
       }
 
       // Handle other network errors
       if (error instanceof Error) {
-        throw new WirePusherError(`Network error: ${error.message}`);
+        throw new WirePusherError(`Network error: ${error.message}`, ErrorCode.NETWORK_ERROR, true);
       }
 
       // Fallback for unknown errors
-      throw new WirePusherError(`Unexpected error: ${String(error)}`);
+      throw new WirePusherError(`Unexpected error: ${String(error)}`, ErrorCode.UNKNOWN, false);
     }
   }
 
@@ -217,17 +221,43 @@ export class WirePusher {
       case 401:
         throw new WirePusherAuthError(
           'Invalid token or device ID. Please check your credentials.',
+          ErrorCode.AUTH_INVALID,
+          false,
         );
       case 403:
         throw new WirePusherAuthError(
           "Forbidden: Your account may be disabled or you don't have permission.",
+          ErrorCode.AUTH_FORBIDDEN,
+          false,
         );
       case 400:
-        throw new WirePusherValidationError(`Invalid parameters: ${errorMessage}`);
+        throw new WirePusherValidationError(
+          `Invalid parameters: ${errorMessage}`,
+          ErrorCode.VALIDATION_ERROR,
+          false,
+        );
       case 404:
-        throw new WirePusherValidationError('Device not found. Please check your device ID.');
+        throw new WirePusherValidationError(
+          'Device not found. Please check your device ID.',
+          ErrorCode.NOT_FOUND,
+          false,
+        );
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        // Server errors are retryable
+        throw new WirePusherError(
+          `API error (${response.status}): ${errorMessage}`,
+          ErrorCode.SERVER_ERROR,
+          true,
+        );
       default:
-        throw new WirePusherError(`API error (${response.status}): ${errorMessage}`);
+        throw new WirePusherError(
+          `API error (${response.status}): ${errorMessage}`,
+          ErrorCode.UNKNOWN,
+          false,
+        );
     }
   }
 }

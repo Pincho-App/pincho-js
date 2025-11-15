@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WirePusher } from '../src/client.js';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError } from '../src/errors.js';
+import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from '../src/errors.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -113,8 +113,15 @@ describe('WirePusher', () => {
         token: 'invalid_token',
       });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherAuthError);
-      await expect(client.send('Test', 'Message')).rejects.toThrow(/Invalid token or device ID/);
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherAuthError);
+        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_INVALID);
+        expect((error as WirePusherAuthError).isRetryable).toBe(false);
+        expect((error as WirePusherAuthError).message).toContain('Invalid token or device ID');
+      }
     });
 
     it('should handle 403 forbidden error', async () => {
@@ -128,8 +135,15 @@ describe('WirePusher', () => {
 
       const client = new WirePusher({ deviceId: 'device123' });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherAuthError);
-      await expect(client.send('Test', 'Message')).rejects.toThrow(/Forbidden/);
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherAuthError);
+        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_FORBIDDEN);
+        expect((error as WirePusherAuthError).isRetryable).toBe(false);
+        expect((error as WirePusherAuthError).message).toContain('Forbidden');
+      }
     });
 
     it('should handle 400 validation error', async () => {
@@ -393,6 +407,104 @@ describe('WirePusher', () => {
 
       expect(body.id).toBe('device123');
       expect(body.token).toBeUndefined();
+    });
+
+    it('should normalize tags before sending', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      await client.send({
+        title: 'Test',
+        message: 'Message',
+        tags: ['Production', ' ALERT ', 'alert', 'test@tag', 'production'],
+      });
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      // Tags should be normalized: lowercase, trimmed, deduplicated, invalid chars removed
+      expect(body.tags).toEqual(['production', 'alert', 'testtag']);
+    });
+
+    it('should not include tags if all become invalid after normalization', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      await client.send({
+        title: 'Test',
+        message: 'Message',
+        tags: ['@@@', '!!!', '###'],
+      });
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      // All tags are invalid, so tags should not be included
+      expect(body.tags).toBeUndefined();
+    });
+
+    it('should handle 500 server error as retryable', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ message: 'Server error' }),
+      });
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.SERVER_ERROR);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+      }
+    });
+
+    it('should handle network errors as retryable', async () => {
+      mockFetch.mockRejectedValue(new Error('Network failure'));
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.NETWORK_ERROR);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+      }
+    });
+
+    it('should handle timeout errors as retryable', async () => {
+      const abortError = new Error('The operation was aborted');
+      abortError.name = 'AbortError';
+      mockFetch.mockRejectedValue(abortError);
+
+      const client = new WirePusher({
+        deviceId: 'device123',
+        timeout: 1000,
+      });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.TIMEOUT);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+      }
     });
   });
 });
