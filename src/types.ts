@@ -5,7 +5,7 @@ export interface ClientConfig {
   /**
    * WirePusher team token (mutually exclusive with deviceId).
    * Use for team-wide notifications.
-   * @example 'wpt_abc123'
+   * @example 'abc12345'
    */
   token?: string;
 

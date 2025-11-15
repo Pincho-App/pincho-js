@@ -39,7 +39,7 @@ Provide detailed steps to reproduce the issue:
 import { WirePusher } from 'wirepusher';
 
 const client = new WirePusher({
-  token: 'wpt_...',
+  token: 'abc12345',
   userId: '...'
 });
 

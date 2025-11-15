@@ -153,18 +153,18 @@ Constructor-based configuration (no config files):
 
 ```typescript
 // Required: token
-const client = new WirePusher({ token: 'wpu_abc123' });
+const client = new WirePusher({ token: 'abc12345' });
 
 // Optional parameters
 const client = new WirePusher({
-  token: 'wpu_abc123',
+  token: 'abc12345',
   timeout: 60000,        // Request timeout in ms (default: 30000)
   baseUrl: '...'         // Custom base URL (for testing)
 });
 ```
 
 **Authentication**:
-- `token` - Team token (preferred, starts with `wpt_` or `wpu_`)
+- `token` - Team token (preferred)
 - `deviceId` - Legacy device ID (deprecated)
 
 ## Dependencies

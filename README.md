@@ -26,7 +26,7 @@ npm install wirepusher
 import { WirePusher } from 'wirepusher';
 
 // Initialize with your token
-const client = new WirePusher({ token: 'wpu_YOUR_TOKEN' });
+const client = new WirePusher({ token: 'abc12345' });
 
 await client.send(
   'Deploy Complete',
@@ -43,7 +43,7 @@ await client.send(
 ```typescript
 import { WirePusher } from 'wirepusher';
 
-const client = new WirePusher({ token: 'wpu_abc123xyz' });
+const client = new WirePusher({ token: 'abc12345' });
 
 const response = await client.send(
   'Deploy Complete',
@@ -58,7 +58,7 @@ console.log(response.status); // 'success'
 ```typescript
 import { WirePusher } from 'wirepusher';
 
-const client = new WirePusher({ token: 'wpu_abc123xyz' });
+const client = new WirePusher({ token: 'abc12345' });
 
 await client.send({
   title: 'Deploy Complete',
@@ -95,7 +95,7 @@ Encrypt notification messages using AES-128-CBC. Only the `message` field is enc
 import { WirePusher } from 'wirepusher';
 
 const encryptionPassword = process.env.WIREPUSHER_ENCRYPTION_PASSWORD!;
-const client = new WirePusher({ token: 'wpu_abc123xyz' });
+const client = new WirePusher({ token: 'abc12345' });
 
 await client.send({
   title: 'Security Alert',
@@ -115,7 +115,7 @@ await client.send({
 ### WirePusher
 
 **Constructor Parameters:**
-- `token` (string, required): Your WirePusher token (starts with `wpu_` or `wpt_`)
+- `token` (string, required): Your WirePusher token
 - `deviceId` (string, optional): Legacy device ID (deprecated, use token instead)
 - `timeout` (number, optional): Request timeout in milliseconds (default: 30000)
 - `baseUrl` (string, optional): Custom base URL for testing
@@ -161,7 +161,7 @@ import {
   WirePusherValidationError
 } from 'wirepusher';
 
-const client = new WirePusher({ token: 'wpu_abc123xyz' });
+const client = new WirePusher({ token: 'abc12345' });
 
 try {
   await client.send('Deploy Complete', 'Version 1.2.3 deployed');

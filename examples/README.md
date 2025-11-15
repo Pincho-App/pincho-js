@@ -8,7 +8,7 @@ Before running any examples, make sure you have:
 
 1. Node.js >= 18.0.0 installed
 2. A WirePusher account with:
-   - API token (starts with `wpt_`)
+   - API token
    - User ID
 
 ## Setup
@@ -24,7 +24,7 @@ npm install wirepusher
 Create a `.env` file in your project root:
 
 ```bash
-WIREPUSHER_TOKEN=wpt_your_token_here
+WIREPUSHER_TOKEN=abc12345
 WIREPUSHER_USER_ID=your_user_id
 ```
 

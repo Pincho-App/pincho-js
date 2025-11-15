@@ -16,7 +16,7 @@ import { normalizeTags } from './utils.js';
  * import { WirePusher } from 'wirepusher';
  *
  * // Team notifications
- * const teamClient = new WirePusher({ token: 'wpt_your_token' });
+ * const teamClient = new WirePusher({ token: 'abc12345' });
  * await teamClient.send('Team Alert', 'Server maintenance scheduled');
  *
  * // Personal notifications (deprecated - use token instead)

@@ -68,7 +68,7 @@ When using the WirePusher JavaScript Client Library:
 ```typescript
 // ❌ Bad - Hardcoded credentials
 const client = new WirePusher({
-  token: 'wpt_abc123',
+  token: 'abc12345',
   userId: 'user123'
 });
 

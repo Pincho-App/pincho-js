@@ -16,7 +16,7 @@ import {
 
 // Initialize the client with type safety
 const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'wpt_your_token_here',
+  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
   deviceId: process.env.WIREPUSHER_DEVICE_ID || 'your_device_id',
   timeout: 30000, // Optional: custom timeout
 });

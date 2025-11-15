@@ -18,14 +18,14 @@ describe('WirePusher', () => {
     });
 
     it('should create instance with token only', () => {
-      const client = new WirePusher({ token: 'wpt_test123' });
+      const client = new WirePusher({ token: 'abc12345' });
       expect(client).toBeInstanceOf(WirePusher);
     });
 
     it('should throw error if both token and deviceId provided', () => {
       expect(() => {
         new WirePusher({
-          token: 'wpt_test123',
+          token: 'abc12345',
           deviceId: 'device123',
         });
       }).toThrow(WirePusherValidationError);
@@ -453,14 +453,14 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'wpt_test123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send('Test', 'Message');
 
       const call = mockFetch.mock.calls[0]!;
       const body = JSON.parse(call[1]?.body as string);
 
-      expect(body.token).toBe('wpt_test123');
+      expect(body.token).toBe('abc12345');
       expect(body.id).toBeUndefined();
     });
 

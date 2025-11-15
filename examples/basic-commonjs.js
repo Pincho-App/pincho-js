@@ -9,7 +9,7 @@ const { WirePusher } = require('wirepusher');
 
 // Initialize the client
 const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'wpt_your_token_here',
+  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
   userId: process.env.WIREPUSHER_USER_ID || 'your_user_id',
 });
 
