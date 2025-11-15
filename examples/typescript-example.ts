@@ -17,7 +17,6 @@ import {
 // Initialize the client with type safety
 const client = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN || 'abc12345',
-  deviceId: process.env.WIREPUSHER_DEVICE_ID || 'your_device_id',
   timeout: 30000, // Optional: custom timeout
 });
 
@@ -57,7 +56,7 @@ async function sendAdvancedNotification(): Promise<void> {
 function handleError(error: unknown): void {
   if (error instanceof WirePusherAuthError) {
     console.error('❌ Authentication failed:', error.message);
-    console.error('   Please check your token and device ID');
+    console.error('   Please check your token');
     // Handle auth errors - maybe refresh credentials
   } else if (error instanceof WirePusherValidationError) {
     console.error('❌ Validation error:', error.message);

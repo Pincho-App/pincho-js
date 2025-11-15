@@ -15,7 +15,6 @@ app.use(express.json());
 // Initialize WirePusher client (singleton pattern)
 const notificationClient = new WirePusher({
   token: process.env.WIREPUSHER_TOKEN || 'abc12345',
-  deviceId: process.env.WIREPUSHER_DEVICE_ID || 'your_device_id',
   timeout: 30000,
 });
 

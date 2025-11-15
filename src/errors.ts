@@ -8,13 +8,13 @@ export enum ErrorCode {
   NETWORK_ERROR = 'NETWORK_ERROR',
   /** Request timeout */
   TIMEOUT = 'TIMEOUT',
-  /** Authentication failed (invalid token/device ID) */
+  /** Authentication failed (invalid token) */
   AUTH_INVALID = 'AUTH_INVALID',
   /** Permission denied (forbidden) */
   AUTH_FORBIDDEN = 'AUTH_FORBIDDEN',
   /** Validation error (invalid parameters) */
   VALIDATION_ERROR = 'VALIDATION_ERROR',
-  /** Resource not found (device not found) */
+  /** Resource not found */
   NOT_FOUND = 'NOT_FOUND',
   /** Server error (5xx responses) */
   SERVER_ERROR = 'SERVER_ERROR',
@@ -51,8 +51,6 @@ export class WirePusherError extends Error {
  *
  * This typically occurs when:
  * - The API token is invalid or expired
- * - The user ID is incorrect
- * - The token doesn't have permission for the user ID
  * - The account is disabled
  */
 export class WirePusherAuthError extends WirePusherError {
@@ -70,7 +68,6 @@ export class WirePusherAuthError extends WirePusherError {
  * - Required parameters are missing
  * - Parameters have invalid values
  * - The request format is incorrect
- * - The user is not found
  */
 export class WirePusherValidationError extends WirePusherError {
   constructor(message: string, code: ErrorCode = ErrorCode.VALIDATION_ERROR, isRetryable = false) {

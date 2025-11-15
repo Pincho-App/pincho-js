@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple API: `send(title, message)` for basic notifications
 - Advanced API: `send(options)` for notifications with all parameters
 - Support for notification types, tags, images, and action URLs
-- Authentication via API tokens (v1 API)
+- Authentication via API tokens
 - Graceful error handling with fallback parsing
 - Custom base URL support for testing or alternative gateways
 

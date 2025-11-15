@@ -8,12 +8,12 @@
 import { WirePusher } from '../src/index.js';
 
 // Configuration
-const DEVICE_ID = process.env.WIREPUSHER_DEVICE_ID || 'your_device_id';
+const TOKEN = process.env.WIREPUSHER_TOKEN || 'abc12345';
 const ENCRYPTION_PASSWORD = process.env.WIREPUSHER_ENCRYPTION_PASSWORD || 'your_secure_password';
 
 async function main() {
   // Create client
-  const client = new WirePusher({ deviceId: DEVICE_ID });
+  const client = new WirePusher({ token: TOKEN });
 
   console.log('🔐 WirePusher Encryption Example\n');
 

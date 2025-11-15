@@ -4,27 +4,18 @@ import { encryptMessage, generateIV } from './crypto.js';
 import { normalizeTags } from './utils.js';
 
 /**
- * WirePusher client for sending push notifications via the v1 API.
- *
- * This client supports both team tokens (for team-wide notifications) and device IDs
- * (for personal notifications). Token and deviceId are mutually exclusive.
- *
- * @deprecated deviceId parameter - Legacy authentication. Use token parameter instead.
+ * WirePusher client for sending push notifications.
  *
  * @example
  * ```typescript
  * import { WirePusher } from 'wirepusher';
  *
- * // Team notifications
- * const teamClient = new WirePusher({ token: 'abc12345' });
- * await teamClient.send('Team Alert', 'Server maintenance scheduled');
- *
- * // Personal notifications (deprecated - use token instead)
- * const deviceClient = new WirePusher({ deviceId: 'your_device_id' });
- * await deviceClient.send('Personal Alert', 'Your task is due soon');
+ * // Initialize client
+ * const client = new WirePusher({ token: 'abc12345' });
+ * await client.send('Deploy Complete', 'Version 1.2.3 deployed');
  *
  * // With all options including encryption
- * await deviceClient.send({
+ * await client.send({
  *   title: 'Secure Message',
  *   message: 'Sensitive information here',
  *   type: 'secure',
@@ -35,33 +26,17 @@ import { normalizeTags } from './utils.js';
  */
 export class WirePusher {
   private readonly baseUrl: string;
-  private readonly token: string | undefined;
-  private readonly deviceId: string | undefined;
+  private readonly token: string;
   private readonly timeout: number;
 
   constructor(config: ClientConfig) {
-    // Validate mutual exclusivity
-    if (config.token && config.deviceId) {
-      throw new WirePusherValidationError(
-        "Cannot specify both 'token' and 'deviceId' - they are mutually exclusive. " +
-          "Use 'token' for team notifications or 'deviceId' for personal notifications.",
-      );
-    }
-    if (!config.token && !config.deviceId) {
-      throw new WirePusherValidationError(
-        "Must specify either 'token' or 'deviceId'. " +
-          "Use 'token' for team notifications or 'deviceId' for personal notifications.",
-      );
-    }
-
     this.token = config.token;
-    this.deviceId = config.deviceId;
     this.timeout = config.timeout ?? 30000;
     this.baseUrl = config.baseUrl ?? 'https://wirepusher.com';
   }
 
   /**
-   * Send a notification via WirePusher v1 API.
+   * Send a notification via WirePusher API.
    *
    * Supports two signatures:
    * 1. `send(title, message)` - Simple notification
@@ -70,7 +45,7 @@ export class WirePusher {
    * @param titleOrOptions - Notification title or options object
    * @param message - Notification message (only when using simple signature)
    * @returns Promise resolving to the API response
-   * @throws {WirePusherAuthError} Invalid token or user ID
+   * @throws {WirePusherAuthError} Invalid token
    * @throws {WirePusherValidationError} Invalid parameters
    * @throws {WirePusherError} Network errors or other API errors
    *
@@ -124,8 +99,7 @@ export class WirePusher {
     const body: {
       title: string;
       message: string;
-      id?: string;
-      token?: string;
+      token: string;
       type?: string;
       tags?: string[];
       imageURL?: string;
@@ -134,11 +108,8 @@ export class WirePusher {
     } = {
       title: options.title,
       message: finalMessage,
+      token: this.token,
     };
-
-    // Add authentication (either token or deviceId)
-    if (this.token) body.token = this.token;
-    if (this.deviceId) body.id = this.deviceId;
 
     // Add optional parameters only if provided
     if (options.type !== undefined) body.type = options.type;
@@ -241,7 +212,7 @@ export class WirePusher {
     switch (response.status) {
       case 401:
         throw new WirePusherAuthError(
-          'Invalid token or device ID. Please check your credentials.',
+          'Invalid token. Please check your credentials.',
           ErrorCode.AUTH_INVALID,
           false,
         );
@@ -259,7 +230,7 @@ export class WirePusher {
         );
       case 404:
         throw new WirePusherValidationError(
-          'Device not found. Please check your device ID.',
+          `Resource not found: ${errorMessage}`,
           ErrorCode.NOT_FOUND,
           false,
         );

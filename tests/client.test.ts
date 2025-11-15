@@ -12,34 +12,14 @@ describe('WirePusher', () => {
   });
 
   describe('constructor', () => {
-    it('should create instance with deviceId only', () => {
-      const client = new WirePusher({ deviceId: 'device123' });
-      expect(client).toBeInstanceOf(WirePusher);
-    });
-
-    it('should create instance with token only', () => {
+    it('should create instance with token', () => {
       const client = new WirePusher({ token: 'abc12345' });
       expect(client).toBeInstanceOf(WirePusher);
     });
 
-    it('should throw error if both token and deviceId provided', () => {
-      expect(() => {
-        new WirePusher({
-          token: 'abc12345',
-          deviceId: 'device123',
-        });
-      }).toThrow(WirePusherValidationError);
-    });
-
-    it('should throw error if neither token nor deviceId provided', () => {
-      expect(() => {
-        new WirePusher({});
-      }).toThrow(WirePusherValidationError);
-    });
-
     it('should use custom timeout if provided', () => {
       const client = new WirePusher({
-        deviceId: 'device123',
+        token: 'abc12345',
         timeout: 60000,
       });
 
@@ -48,7 +28,7 @@ describe('WirePusher', () => {
 
     it('should use custom base URL if provided', () => {
       const client = new WirePusher({
-        deviceId: 'device123',
+        token: 'abc12345',
         baseUrl: 'https://custom.example.com',
       });
 
@@ -63,7 +43,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       const response = await client.send('Test Title', 'Test message');
 
@@ -78,7 +58,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       const response = await client.send({
         title: 'Test Title',
@@ -127,7 +107,7 @@ describe('WirePusher', () => {
         expect(error).toBeInstanceOf(WirePusherAuthError);
         expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_INVALID);
         expect((error as WirePusherAuthError).isRetryable).toBe(false);
-        expect((error as WirePusherAuthError).message).toContain('Invalid token or device ID');
+        expect((error as WirePusherAuthError).message).toContain('Invalid token');
       }
     });
 
@@ -147,7 +127,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       try {
         await client.send('Test', 'Message');
@@ -177,7 +157,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('', 'Message')).rejects.toThrow(WirePusherValidationError);
       await expect(client.send('', 'Message')).rejects.toThrow(/Invalid parameters/);
@@ -203,11 +183,11 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
-        deviceId: 'invalid_device',
+        token: 'abc12345',
       });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherValidationError);
-      await expect(client.send('Test', 'Message')).rejects.toThrow(/Device not found/);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(/Resource not found/);
     });
 
     it('should handle 500 server error', async () => {
@@ -226,7 +206,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/API error \(500\)/);
@@ -241,7 +221,7 @@ describe('WirePusher', () => {
         text: async () => 'Internal server error',
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Internal server error/);
     });
@@ -258,7 +238,7 @@ describe('WirePusher', () => {
         text: async () => 'Malformed response',
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
     });
@@ -280,7 +260,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       try {
         await client.send('', 'Message');
@@ -300,7 +280,7 @@ describe('WirePusher', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Network error/);
@@ -312,7 +292,7 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
-        deviceId: 'device123',
+        token: 'abc12345',
         timeout: 1000,
       });
 
@@ -323,7 +303,7 @@ describe('WirePusher', () => {
     it('should handle non-Error throws gracefully', async () => {
       mockFetch.mockRejectedValue('string error');
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Unexpected error/);
@@ -335,7 +315,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send({
         title: 'Test',
@@ -348,8 +328,7 @@ describe('WirePusher', () => {
 
       expect(body.title).toBe('Test');
       expect(body.message).toBe('Message');
-      expect(body.id).toBe('device123');
-      expect(body.token).toBeUndefined();
+      expect(body.token).toBe('abc12345');
       expect(body.type).toBeUndefined();
       expect(body.tags).toBeUndefined();
       expect(body.imageURL).toBeUndefined();
@@ -362,7 +341,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send('Test', 'Message');
 
@@ -379,7 +358,7 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
-        deviceId: 'device123',
+        token: 'abc12345',
         baseUrl: 'https://custom.example.com',
       });
 
@@ -395,7 +374,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send({
         title: 'Secure Message',
@@ -429,7 +408,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send({
         title: 'Regular Message',
@@ -461,24 +440,6 @@ describe('WirePusher', () => {
       const body = JSON.parse(call[1]?.body as string);
 
       expect(body.token).toBe('abc12345');
-      expect(body.id).toBeUndefined();
-    });
-
-    it('should use deviceId authentication when provided', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ status: 'success', message: 'Sent' }),
-      });
-
-      const client = new WirePusher({ deviceId: 'device123' });
-
-      await client.send('Test', 'Message');
-
-      const call = mockFetch.mock.calls[0]!;
-      const body = JSON.parse(call[1]?.body as string);
-
-      expect(body.id).toBe('device123');
-      expect(body.token).toBeUndefined();
     });
 
     it('should normalize tags before sending', async () => {
@@ -487,7 +448,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send({
         title: 'Test',
@@ -508,7 +469,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       await client.send({
         title: 'Test',
@@ -539,7 +500,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       try {
         await client.send('Test', 'Message');
@@ -554,7 +515,7 @@ describe('WirePusher', () => {
     it('should handle network errors as retryable', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ deviceId: 'device123' });
+      const client = new WirePusher({ token: 'abc12345' });
 
       try {
         await client.send('Test', 'Message');
@@ -572,7 +533,7 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
-        deviceId: 'device123',
+        token: 'abc12345',
         timeout: 1000,
       });
 
