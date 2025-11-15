@@ -22,6 +22,8 @@ npm install wirepusher
 
 ## Quick Start
 
+### Send Notification
+
 ```typescript
 import { WirePusher } from 'wirepusher';
 
@@ -32,6 +34,21 @@ await client.send(
   'Deploy Complete',
   'Version 1.2.3 deployed to production'
 );
+```
+
+### AI-Powered Notifications
+
+Convert free-form text into structured notifications using AI:
+
+```typescript
+const client = new WirePusher({ token: 'abc12345' });
+
+const response = await client.notifai(
+  'deployment finished successfully, v2.1.3 is live on prod'
+);
+
+// AI generates: title, message, tags, and action URL
+console.log(response.summary?.title); // "Deploy Complete - v2.1.3"
 ```
 
 **Get your token:** Open app → Settings → Help → copy token

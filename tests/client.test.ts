@@ -50,6 +50,10 @@ describe('WirePusher', () => {
       expect(response.status).toBe('success');
       expect(response.message).toBe('Notification sent');
       expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      // Verify Authorization header is sent
+      const call = mockFetch.mock.calls[0]!;
+      expect(call[1]?.headers).toHaveProperty('Authorization', 'Bearer abc12345');
     });
 
     it('should send notification with options object', async () => {
@@ -328,11 +332,13 @@ describe('WirePusher', () => {
 
       expect(body.title).toBe('Test');
       expect(body.message).toBe('Message');
-      expect(body.token).toBe('abc12345');
       expect(body.type).toBeUndefined();
       expect(body.tags).toBeUndefined();
       expect(body.imageURL).toBeUndefined();
       expect(body.actionURL).toBeUndefined();
+
+      // Token should be in header, not body
+      expect(call[1]?.headers).toHaveProperty('Authorization', 'Bearer abc12345');
     });
 
     it('should use correct headers and URL', async () => {
@@ -348,7 +354,10 @@ describe('WirePusher', () => {
       const call = mockFetch.mock.calls[0]!;
       expect(call[0]).toBe('https://api.wirepusher.dev/send');
       expect(call[1]?.method).toBe('POST');
-      expect(call[1]?.headers).toEqual({ 'Content-Type': 'application/json' });
+      expect(call[1]?.headers).toEqual({
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer abc12345',
+      });
     });
 
     it('should use custom base URL when provided', async () => {
@@ -437,9 +446,9 @@ describe('WirePusher', () => {
       await client.send('Test', 'Message');
 
       const call = mockFetch.mock.calls[0]!;
-      const body = JSON.parse(call[1]?.body as string);
 
-      expect(body.token).toBe('abc12345');
+      // Token should be in Authorization header, not body
+      expect(call[1]?.headers).toHaveProperty('Authorization', 'Bearer abc12345');
     });
 
     it('should normalize tags before sending', async () => {

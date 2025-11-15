@@ -1,4 +1,4 @@
-import type { ClientConfig, NotificationOptions, NotificationResponse } from './types.js';
+import type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse } from './types.js';
 import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
 import { normalizeTags } from './utils.js';
@@ -95,11 +95,10 @@ export class WirePusher {
     // Normalize tags if provided
     const normalizedTags = options.tags ? normalizeTags(options.tags) : undefined;
 
-    // Build request body
+    // Build request body (token goes in Authorization header, not body)
     const body: {
       title: string;
       message: string;
-      token: string;
       type?: string;
       tags?: string[];
       imageURL?: string;
@@ -108,7 +107,6 @@ export class WirePusher {
     } = {
       title: options.title,
       message: finalMessage,
-      token: this.token,
     };
 
     // Add optional parameters only if provided
@@ -127,6 +125,7 @@ export class WirePusher {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
@@ -250,6 +249,78 @@ export class WirePusher {
           ErrorCode.UNKNOWN,
           false,
         );
+    }
+  }
+
+  /**
+   * Convert free-form text into a structured notification using AI.
+   *
+   * @param text - Free-form text to convert (5-2500 characters)
+   * @param type - Optional notification type to override AI-generated type
+   * @returns Promise resolving to the NotifAI API response
+   * @throws {WirePusherAuthError} Invalid token
+   * @throws {WirePusherValidationError} Invalid parameters
+   * @throws {WirePusherError} Other API errors
+   *
+   * @example
+   * ```typescript
+   * const client = new WirePusher({ token: 'abc12345' });
+   * const response = await client.notifai('deployment finished, v2.1.3 is live');
+   * console.log(response.summary?.title); // AI-generated title
+   * ```
+   */
+  async notifai(text: string, type?: string): Promise<NotifAIResponse> {
+    // Build request body
+    const body: {
+      text: string;
+      type?: string;
+    } = { text };
+
+    if (type !== undefined) body.type = type;
+
+    try {
+      // Use AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+      const response = await fetch(`${this.baseUrl}/notifai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Handle error responses
+      if (!response.ok) {
+        await this.handleErrorResponse(response);
+      }
+
+      // Parse successful response
+      const data = (await response.json()) as NotifAIResponse;
+      return data;
+    } catch (error) {
+      // Re-throw WirePusher errors as-is
+      if (error instanceof WirePusherError) {
+        throw error;
+      }
+
+      // Handle timeout errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new WirePusherError(`Request timeout after ${this.timeout}ms`, ErrorCode.TIMEOUT, true);
+      }
+
+      // Handle other network errors
+      if (error instanceof Error) {
+        throw new WirePusherError(`Network error: ${error.message}`, ErrorCode.NETWORK_ERROR, true);
+      }
+
+      // Fallback for unknown errors
+      throw new WirePusherError(`Unexpected error: ${String(error)}`, ErrorCode.UNKNOWN, false);
     }
   }
 }

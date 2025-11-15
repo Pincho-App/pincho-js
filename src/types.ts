@@ -82,3 +82,28 @@ export interface NotificationResponse {
    */
   message: string;
 }
+
+/**
+ * NotifAI response from the WirePusher API.
+ */
+export interface NotifAIResponse {
+  /**
+   * Response status (typically 'success' or 'error').
+   */
+  status: string;
+
+  /**
+   * Human-readable response message.
+   */
+  message: string;
+
+  /**
+   * AI-generated notification summary.
+   */
+  summary?: {
+    title: string;
+    message: string;
+    actionURL?: string;
+    tags?: string[];
+  };
+}

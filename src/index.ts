@@ -8,5 +8,5 @@
 
 export { WirePusher } from './client.js';
 export { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
-export type { ClientConfig, NotificationOptions, NotificationResponse } from './types.js';
+export type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse } from './types.js';
 export { normalizeTags } from './utils.js';
