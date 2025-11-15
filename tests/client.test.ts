@@ -106,7 +106,14 @@ describe('WirePusher', () => {
         status: 401,
         statusText: 'Unauthorized',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Invalid token' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'authentication_error',
+            code: 'invalid_token',
+            message: 'Invalid token',
+          },
+        }),
       });
 
       const client = new WirePusher({
@@ -130,7 +137,14 @@ describe('WirePusher', () => {
         status: 403,
         statusText: 'Forbidden',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Account disabled' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'authentication_error',
+            code: 'forbidden',
+            message: 'Account disabled',
+          },
+        }),
       });
 
       const client = new WirePusher({ deviceId: 'device123' });
@@ -152,14 +166,23 @@ describe('WirePusher', () => {
         status: 400,
         statusText: 'Bad Request',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Title is required' }),
-        text: async () => 'Title is required',
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'validation_error',
+            code: 'invalid_parameter',
+            message: 'Title is required',
+            param: 'title',
+          },
+        }),
       });
 
       const client = new WirePusher({ deviceId: 'device123' });
 
       await expect(client.send('', 'Message')).rejects.toThrow(WirePusherValidationError);
       await expect(client.send('', 'Message')).rejects.toThrow(/Invalid parameters/);
+      await expect(client.send('', 'Message')).rejects.toThrow(/parameter: title/);
+      await expect(client.send('', 'Message')).rejects.toThrow(/invalid_parameter/);
     });
 
     it('should handle 404 not found error', async () => {
@@ -168,7 +191,15 @@ describe('WirePusher', () => {
         status: 404,
         statusText: 'Not Found',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Device not found' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'not_found_error',
+            code: 'device_not_found',
+            message: 'Device not found',
+            param: 'id',
+          },
+        }),
       });
 
       const client = new WirePusher({
@@ -185,7 +216,14 @@ describe('WirePusher', () => {
         status: 500,
         statusText: 'Internal Server Error',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Server error' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'server_error',
+            code: 'internal_error',
+            message: 'Server error',
+          },
+        }),
       });
 
       const client = new WirePusher({ deviceId: 'device123' });
@@ -223,6 +261,64 @@ describe('WirePusher', () => {
       const client = new WirePusher({ deviceId: 'device123' });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+    });
+
+    it('should parse nested error format with code and param', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'validation_error',
+            code: 'invalid_length',
+            message: 'Title must be between 1 and 250 characters',
+            param: 'title',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      try {
+        await client.send('', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherValidationError);
+        const err = error as WirePusherValidationError;
+        // Should include parameter context
+        expect(err.message).toContain('parameter: title');
+        // Should include error code
+        expect(err.message).toContain('[invalid_length]');
+        // Should include base message
+        expect(err.message).toContain('Title must be between 1 and 250 characters');
+      }
+    });
+
+    it('should handle legacy error format without nested error object', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          message: 'Legacy error message',
+        }),
+      });
+
+      const client = new WirePusher({ deviceId: 'device123' });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherValidationError);
+        const err = error as WirePusherValidationError;
+        // Should still extract message from legacy format
+        expect(err.message).toContain('Legacy error message');
+      }
     });
 
     it('should handle network errors', async () => {
@@ -457,7 +553,14 @@ describe('WirePusher', () => {
         status: 500,
         statusText: 'Internal Server Error',
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ message: 'Server error' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'server_error',
+            code: 'internal_error',
+            message: 'Server error',
+          },
+        }),
       });
 
       const client = new WirePusher({ deviceId: 'device123' });

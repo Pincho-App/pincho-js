@@ -206,8 +206,29 @@ export class WirePusher {
     try {
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/json')) {
-        const errorData = (await response.json()) as { message?: string };
-        errorMessage = errorData.message ?? response.statusText;
+        const errorData = (await response.json()) as {
+          message?: string;
+          error?: {
+            type?: string;
+            code?: string;
+            message?: string;
+            param?: string;
+          };
+        };
+
+        // Parse nested error format: { error: { message, code, type, param } }
+        const errorObj = errorData.error || {};
+        errorMessage = errorObj.message || errorData.message || response.statusText;
+
+        // Append parameter context if available
+        if (errorObj.param) {
+          errorMessage = `${errorMessage} (parameter: ${errorObj.param})`;
+        }
+
+        // Append error code if available
+        if (errorObj.code) {
+          errorMessage = `${errorMessage} [${errorObj.code}]`;
+        }
       } else {
         errorMessage = await response.text();
       }
