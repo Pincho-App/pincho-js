@@ -291,6 +291,64 @@ describe('WirePusher', () => {
       await expect(client.send('Test', 'Message')).rejects.toThrow(/API error \(500\)/);
     });
 
+    it('should handle 429 rate limit error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'rate_limit_error',
+            code: 'rate_limited',
+            message: 'Rate limit exceeded',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect((error as WirePusherError).message).toContain('Rate limit exceeded');
+      }
+    });
+
+    it('should handle unknown status code error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 418,
+        statusText: "I'm a teapot",
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({
+          status: 'error',
+          error: {
+            type: 'unknown_error',
+            code: 'unknown',
+            message: 'Unknown error',
+          },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.UNKNOWN);
+        expect((error as WirePusherError).isRetryable).toBe(false);
+        expect((error as WirePusherError).message).toContain('API error (418)');
+      }
+    });
+
     it('should handle error response with text content', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
@@ -632,6 +690,77 @@ describe('WirePusher', () => {
         expect((error as WirePusherError).code).toBe(ErrorCode.TIMEOUT);
         expect((error as WirePusherError).isRetryable).toBe(true);
       }
+    });
+
+    it('should retry on server error and succeed on second attempt', async () => {
+      // First call fails with 500, second call succeeds
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            status: 'error',
+            error: { message: 'Server error' },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ status: 'success', message: 'Notification sent' }),
+        });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+
+      // Mock timers to avoid actual delays
+      vi.useFakeTimers();
+
+      const sendPromise = client.send('Test', 'Message');
+
+      // Fast-forward through the retry delay
+      await vi.runAllTimersAsync();
+
+      const response = await sendPromise;
+
+      expect(response.status).toBe('success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+
+      vi.useRealTimers();
+    });
+
+    it('should use longer backoff for rate limit errors', async () => {
+      // Rate limit error should have 5s base backoff
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          statusText: 'Too Many Requests',
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            status: 'error',
+            error: { message: 'Rate limited' },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ status: 'success', message: 'Sent' }),
+        });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+
+      vi.useFakeTimers();
+
+      const sendPromise = client.send('Test', 'Message');
+
+      // Fast-forward through the retry delay (rate limit uses 5s base)
+      await vi.runAllTimersAsync();
+
+      const response = await sendPromise;
+
+      expect(response.status).toBe('success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+
+      vi.useRealTimers();
     });
   });
 
