@@ -113,6 +113,7 @@ describe('WirePusher', () => {
     it('should send simple notification (title, message)', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
@@ -132,6 +133,7 @@ describe('WirePusher', () => {
     it('should send notification with options object', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
@@ -450,6 +452,7 @@ describe('WirePusher', () => {
     it('should only include optional parameters when provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -478,6 +481,7 @@ describe('WirePusher', () => {
     it('should use correct headers and URL', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -491,12 +495,29 @@ describe('WirePusher', () => {
       expect(call[1]?.headers).toEqual({
         'Content-Type': 'application/json',
         Authorization: 'Bearer abc12345',
+        'User-Agent': 'wirepusher-js/1.0.0-alpha.7',
       });
+    });
+
+    it('should send User-Agent header with version', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers(),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      await client.send('Test', 'Message');
+
+      const call = mockFetch.mock.calls[0]!;
+      expect(call[1]?.headers).toHaveProperty('User-Agent', 'wirepusher-js/1.0.0-alpha.7');
     });
 
     it('should use custom base URL when provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -515,6 +536,7 @@ describe('WirePusher', () => {
     it('should encrypt message when encryptionPassword provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -549,6 +571,7 @@ describe('WirePusher', () => {
     it('should not encrypt when encryptionPassword not provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -573,6 +596,7 @@ describe('WirePusher', () => {
     it('should use token authentication when provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -589,6 +613,7 @@ describe('WirePusher', () => {
     it('should normalize tags before sending', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -610,6 +635,7 @@ describe('WirePusher', () => {
     it('should not include tags if all become invalid after normalization', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
@@ -707,6 +733,7 @@ describe('WirePusher', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
+          headers: new Headers(),
           json: async () => ({ status: 'success', message: 'Notification sent' }),
         });
 
@@ -743,6 +770,7 @@ describe('WirePusher', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
+          headers: new Headers(),
           json: async () => ({ status: 'success', message: 'Sent' }),
         });
 
@@ -762,12 +790,210 @@ describe('WirePusher', () => {
 
       vi.useRealTimers();
     });
+
+    it('should parse and store rate limit headers', async () => {
+      const resetTimestamp = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers({
+          'RateLimit-Limit': '100',
+          'RateLimit-Remaining': '95',
+          'RateLimit-Reset': String(resetTimestamp),
+        }),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      // Initially, no rate limit info
+      expect(client.getRateLimitInfo()).toBeNull();
+
+      await client.send('Test', 'Message');
+
+      const rateLimit = client.getRateLimitInfo();
+      expect(rateLimit).not.toBeNull();
+      expect(rateLimit?.limit).toBe(100);
+      expect(rateLimit?.remaining).toBe(95);
+      expect(rateLimit?.reset).toBeInstanceOf(Date);
+      expect(rateLimit?.reset.getTime()).toBe(resetTimestamp * 1000);
+    });
+
+    it('should handle missing rate limit headers gracefully', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers(),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      await client.send('Test', 'Message');
+
+      // Rate limit info should remain null
+      expect(client.getRateLimitInfo()).toBeNull();
+    });
+
+    it('should handle partial rate limit headers gracefully', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers({
+          'RateLimit-Limit': '100',
+          // Missing RateLimit-Remaining and RateLimit-Reset
+        }),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      await client.send('Test', 'Message');
+
+      // Rate limit info should remain null due to missing headers
+      expect(client.getRateLimitInfo()).toBeNull();
+    });
+
+    it('should handle invalid rate limit header values gracefully', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers({
+          'RateLimit-Limit': 'not-a-number',
+          'RateLimit-Remaining': '95',
+          'RateLimit-Reset': '12345',
+        }),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      await client.send('Test', 'Message');
+
+      // Rate limit info should remain null due to invalid values
+      expect(client.getRateLimitInfo()).toBeNull();
+    });
+
+    it('should use Retry-After header for rate limit retry delay', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          statusText: 'Too Many Requests',
+          headers: new Headers({
+            'content-type': 'application/json',
+            'Retry-After': '10', // Server says wait 10 seconds
+          }),
+          json: async () => ({
+            status: 'error',
+            error: { message: 'Rate limited' },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers(),
+          json: async () => ({ status: 'success', message: 'Sent' }),
+        });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+
+      vi.useFakeTimers();
+
+      const sendPromise = client.send('Test', 'Message');
+
+      // The retry should use 10 seconds from Retry-After header
+      await vi.runAllTimersAsync();
+
+      const response = await sendPromise;
+
+      expect(response.status).toBe('success');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+
+      vi.useRealTimers();
+    });
+
+    it('should parse Retry-After header on 429 error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: new Headers({
+          'content-type': 'application/json',
+          'Retry-After': '30',
+        }),
+        json: async () => ({
+          status: 'error',
+          error: { message: 'Rate limited' },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as WirePusherError).retryAfterSeconds).toBe(30);
+      }
+    });
+
+    it('should handle missing Retry-After header on 429 error', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: new Headers({
+          'content-type': 'application/json',
+        }),
+        json: async () => ({
+          status: 'error',
+          error: { message: 'Rate limited' },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as WirePusherError).retryAfterSeconds).toBeUndefined();
+      }
+    });
+
+    it('should handle invalid Retry-After header value', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: new Headers({
+          'content-type': 'application/json',
+          'Retry-After': 'not-a-number',
+        }),
+        json: async () => ({
+          status: 'error',
+          error: { message: 'Rate limited' },
+        }),
+      });
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+
+      try {
+        await client.send('Test', 'Message');
+        expect.fail('Should have thrown an error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(WirePusherError);
+        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as WirePusherError).retryAfterSeconds).toBeUndefined();
+      }
+    });
   });
 
   describe('notifai', () => {
     it('should send notifai request successfully', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({
           status: 'success',
           message: 'Notification received successfully',
@@ -796,6 +1022,7 @@ describe('WirePusher', () => {
     it('should send notifai request with type parameter', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
+        headers: new Headers(),
         json: async () => ({
           status: 'success',
           message: 'Notification received successfully',

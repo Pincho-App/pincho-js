@@ -1,7 +1,12 @@
-import type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse } from './types.js';
+import type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse, RateLimitInfo } from './types.js';
 import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
 import { normalizeTags } from './utils.js';
+
+/**
+ * Library version for User-Agent header.
+ */
+const VERSION = '1.0.0-alpha.7';
 
 /**
  * WirePusher client for sending push notifications.
@@ -29,6 +34,12 @@ export class WirePusher {
   private readonly token: string;
   private readonly timeout: number;
   private readonly maxRetries: number;
+
+  /**
+   * Last known rate limit information from API response headers.
+   * Updated after each successful API request.
+   */
+  private _lastRateLimit: RateLimitInfo | null = null;
 
   // Retry constants
   private static readonly INITIAL_BACKOFF_MS = 1000;
@@ -68,6 +79,53 @@ export class WirePusher {
     this.timeout = resolvedTimeout;
     this.maxRetries = resolvedMaxRetries;
     this.baseUrl = config.baseUrl ?? 'https://api.wirepusher.dev';
+  }
+
+  /**
+   * Get the last known rate limit information from API response headers.
+   *
+   * @returns Rate limit info or null if no request has been made yet
+   *
+   * @example
+   * ```typescript
+   * const client = new WirePusher({ token: 'abc12345' });
+   * await client.send('Test', 'Message');
+   * const rateLimit = client.getRateLimitInfo();
+   * if (rateLimit) {
+   *   console.log(`Remaining: ${rateLimit.remaining}/${rateLimit.limit}`);
+   *   console.log(`Resets at: ${rateLimit.reset}`);
+   * }
+   * ```
+   */
+  getRateLimitInfo(): RateLimitInfo | null {
+    return this._lastRateLimit;
+  }
+
+  /**
+   * Parse rate limit headers from API response.
+   *
+   * @param headers - Response headers
+   * @returns Parsed rate limit info or null if headers not present
+   */
+  private parseRateLimitHeaders(headers: Headers): RateLimitInfo | null {
+    const limit = headers.get('RateLimit-Limit');
+    const remaining = headers.get('RateLimit-Remaining');
+    const reset = headers.get('RateLimit-Reset');
+
+    if (limit && remaining && reset) {
+      const limitNum = parseInt(limit, 10);
+      const remainingNum = parseInt(remaining, 10);
+      const resetNum = parseInt(reset, 10);
+
+      if (!isNaN(limitNum) && !isNaN(remainingNum) && !isNaN(resetNum)) {
+        return {
+          limit: limitNum,
+          remaining: remainingNum,
+          reset: new Date(resetNum * 1000), // Unix timestamp to Date
+        };
+      }
+    }
+    return null;
   }
 
   /**
@@ -206,7 +264,14 @@ export class WirePusher {
 
         // Calculate backoff delay (special handling for rate limits)
         const isRateLimit = error.code === ErrorCode.RATE_LIMIT;
-        const delay = this.calculateBackoff(attempt, isRateLimit);
+        let delay: number;
+
+        // Use Retry-After header value if available for rate limits
+        if (isRateLimit && error.retryAfterSeconds !== undefined) {
+          delay = error.retryAfterSeconds * 1000;
+        } else {
+          delay = this.calculateBackoff(attempt, isRateLimit);
+        }
 
         // Wait before retrying
         await this.sleep(delay);
@@ -235,12 +300,19 @@ export class WirePusher {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.token}`,
+          'User-Agent': `wirepusher-js/${VERSION}`,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
+
+      // Parse rate limit headers
+      const rateLimitInfo = this.parseRateLimitHeaders(response.headers);
+      if (rateLimitInfo) {
+        this._lastRateLimit = rateLimitInfo;
+      }
 
       // Handle error responses
       if (!response.ok) {
@@ -341,13 +413,23 @@ export class WirePusher {
           ErrorCode.NOT_FOUND,
           false,
         );
-      case 429:
+      case 429: {
         // Rate limit errors are retryable
-        throw new WirePusherError(
+        const rateLimitError = new WirePusherError(
           `Rate limit exceeded: ${errorMessage}`,
           ErrorCode.RATE_LIMIT,
           true,
         );
+        // Parse Retry-After header if available
+        const retryAfterHeader = response.headers.get('Retry-After');
+        if (retryAfterHeader) {
+          const retryAfterSeconds = parseInt(retryAfterHeader, 10);
+          if (!isNaN(retryAfterSeconds)) {
+            rateLimitError.retryAfterSeconds = retryAfterSeconds;
+          }
+        }
+        throw rateLimitError;
+      }
       case 500:
       case 502:
       case 503:
