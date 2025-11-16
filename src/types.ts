@@ -128,3 +128,23 @@ export interface NotifAIResponse {
     tags?: string[];
   };
 }
+
+/**
+ * Rate limit information from API response headers.
+ */
+export interface RateLimitInfo {
+  /**
+   * Maximum number of requests allowed in the current window.
+   */
+  limit: number;
+
+  /**
+   * Number of requests remaining in the current window.
+   */
+  remaining: number;
+
+  /**
+   * Date when the rate limit window resets.
+   */
+  reset: Date;
+}

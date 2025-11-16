@@ -36,6 +36,12 @@ export class WirePusherError extends Error {
    */
   public readonly isRetryable: boolean;
 
+  /**
+   * Retry-After value in seconds from API response header (if available).
+   * Used for rate limit errors to indicate when to retry.
+   */
+  public retryAfterSeconds?: number;
+
   constructor(message: string, code: ErrorCode = ErrorCode.UNKNOWN, isRetryable = false) {
     super(message);
     this.name = 'WirePusherError';
