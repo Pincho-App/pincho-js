@@ -5,7 +5,7 @@
  * Only the message content is encrypted; title, type, and other metadata remain unencrypted.
  */
 
-import { WirePusher } from '../src/index.js';
+import { WirePusher } from 'wirepusher';
 
 // Configuration
 const TOKEN = process.env.WIREPUSHER_TOKEN || 'abc12345';
