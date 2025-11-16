@@ -117,20 +117,16 @@ steps:
           exit 0
         fi
 
-        echo "=== Sending release notification ==="
-        curl -s -X POST https://api.wirepusher.dev/send \
+        echo "=== Sending release notification via NotifAI ==="
+        curl -s -X POST https://api.wirepusher.dev/notifai \
           -H "Authorization: Bearer $$WIREPUSHER_TOKEN" \
           -H "Content-Type: application/json" \
           -d "{
-            \"title\": \"JavaScript SDK Release $TAG_NAME\",
-            \"message\": \"WirePusher JavaScript SDK $TAG_NAME published to npm. Install via: npm install wirepusher\",
-            \"type\": \"release\",
-            \"tags\": [\"javascript\", \"sdk\", \"release\", \"npm\"],
-            \"actionURL\": \"https://www.npmjs.com/package/wirepusher\"
+            \"text\": \"WirePusher JavaScript SDK $TAG_NAME published to npm successfully. Install via npm install wirepusher. View package at https://www.npmjs.com/package/wirepusher\"
           }"
 
         echo ""
-        echo "✓ Release notification sent"
+        echo "✓ Release notification sent via NotifAI"
 
 # Secret Manager integration
 availableSecrets:
