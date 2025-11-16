@@ -16,6 +16,8 @@ export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   /** Resource not found */
   NOT_FOUND = 'NOT_FOUND',
+  /** Rate limit exceeded (429) */
+  RATE_LIMIT = 'RATE_LIMIT',
   /** Server error (5xx responses) */
   SERVER_ERROR = 'SERVER_ERROR',
 }

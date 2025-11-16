@@ -4,19 +4,29 @@
 export interface ClientConfig {
   /**
    * WirePusher token for authentication.
+   * If not provided, reads from WIREPUSHER_TOKEN environment variable.
    * @example 'abc12345'
    */
-  token: string;
+  token?: string;
 
   /**
    * Request timeout in milliseconds.
+   * If not provided, reads from WIREPUSHER_TIMEOUT env var (in seconds) or defaults to 30000ms.
    * @default 30000
    */
   timeout?: number;
 
   /**
+   * Maximum number of retry attempts for transient errors.
+   * If not provided, reads from WIREPUSHER_MAX_RETRIES env var or defaults to 3.
+   * Set to 0 to disable retries.
+   * @default 3
+   */
+  maxRetries?: number;
+
+  /**
    * Custom base URL (mainly for testing).
-   * @default 'https://wirepusher.com'
+   * @default 'https://api.wirepusher.dev'
    */
   baseUrl?: string;
 }
@@ -98,12 +108,23 @@ export interface NotifAIResponse {
   message: string;
 
   /**
-   * AI-generated notification summary.
+   * AI-generated notification summary (deprecated, use notification).
    */
   summary?: {
     title: string;
     message: string;
     actionURL?: string;
+    tags?: string[];
+  };
+
+  /**
+   * AI-generated notification details.
+   */
+  notification?: {
+    title: string;
+    message: string;
+    type: string;
+    actionURL?: string | null;
     tags?: string[];
   };
 }

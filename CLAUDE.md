@@ -149,23 +149,30 @@ Implementation: `crypto.ts`
 
 ## Configuration
 
-Constructor-based configuration (no config files):
+Environment variable support with constructor-based overrides:
 
 ```typescript
-// Required: token
+// Auto-load from environment variables
+const client = new WirePusher();  // reads WIREPUSHER_TOKEN
+
+// Explicit token
 const client = new WirePusher({ token: 'abc12345' });
 
-// Optional parameters
+// All options
 const client = new WirePusher({
-  token: 'abc12345',
-  timeout: 60000,        // Request timeout in ms (default: 30000)
-  baseUrl: '...'         // Custom base URL (for testing)
+  token: 'abc12345',           // Or WIREPUSHER_TOKEN env var
+  timeout: 60000,              // Or WIREPUSHER_TIMEOUT (seconds) env var, default: 30000ms
+  maxRetries: 5,               // Or WIREPUSHER_MAX_RETRIES env var, default: 3
+  baseUrl: '...'               // Custom base URL (for testing)
 });
 ```
 
-**Authentication**:
-- `token` - Team token (preferred)
-- `deviceId` - Legacy device ID (deprecated)
+**Environment Variables**:
+- `WIREPUSHER_TOKEN` - API token (required if not passed to constructor)
+- `WIREPUSHER_TIMEOUT` - Request timeout in seconds (default: 30)
+- `WIREPUSHER_MAX_RETRIES` - Maximum retry attempts (default: 3)
+
+**Authentication**: Token-only via `token` parameter or `WIREPUSHER_TOKEN` env var.
 
 ## Dependencies
 
@@ -225,7 +232,7 @@ describe('WirePusher', () => {
 
 ## Recent Changes
 
-### v1.0.0 (Current)
+### v1.0.0 (Current - Alpha)
 
 **Added**:
 - Initial release with TypeScript support
@@ -442,19 +449,20 @@ export async function POST(request: Request) {
 - ✅ TypeScript implementation with full type safety
 - ✅ Zero runtime dependencies (native fetch)
 - ✅ Dual package support (ESM/CJS)
-- ✅ Custom error classes
+- ✅ Custom error classes with isRetryable property
 - ✅ AES-128-CBC encryption
-- ✅ Comprehensive test suite (>90% coverage)
+- ✅ Comprehensive test suite (101 tests, >90% coverage)
 - ✅ Method overloading for flexible API
 - ✅ Timeout handling with AbortController
-- ✅ Complete documentation
+- ✅ NotifAI endpoint for AI-powered notifications
+- ✅ Automatic retry logic with exponential backoff
+- ✅ Rate limit handling (429) with longer backoff
+- ✅ Environment variable support (WIREPUSHER_TOKEN, WIREPUSHER_TIMEOUT, WIREPUSHER_MAX_RETRIES)
+- ✅ Tag normalization (lowercase, trim, strip invalid chars, dedupe)
 - ✅ CI/CD with Cloud Build
 
-**Not Implemented**:
-- ❌ NotifAI endpoint (not yet available in v1 API)
-- ❌ Automatic retry logic (can be added in future)
-- ❌ Rate limit handling (can be added if needed)
-- ❌ Config file support (not needed for library)
+**Not Needed**:
+- ❌ Config file support (not standard for libraries)
 
 ## Links
 

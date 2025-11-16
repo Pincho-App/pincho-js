@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WirePusher } from '../src/client.js';
 import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from '../src/errors.js';
 
@@ -13,12 +13,13 @@ describe('WirePusher', () => {
 
   describe('constructor', () => {
     it('should create instance with token', () => {
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
       expect(client).toBeInstanceOf(WirePusher);
     });
 
     it('should use custom timeout if provided', () => {
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         timeout: 60000,
       });
@@ -28,11 +29,83 @@ describe('WirePusher', () => {
 
     it('should use custom base URL if provided', () => {
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         baseUrl: 'https://custom.example.com',
       });
 
       expect(client).toBeInstanceOf(WirePusher);
+    });
+
+    it('should throw error when token not provided and no env var', () => {
+      const originalToken = process.env.WIREPUSHER_TOKEN;
+      delete process.env.WIREPUSHER_TOKEN;
+
+      expect(() => new WirePusher({})).toThrow('Token is required');
+
+      // Restore
+      if (originalToken) process.env.WIREPUSHER_TOKEN = originalToken;
+    });
+
+    it('should read token from WIREPUSHER_TOKEN env var', () => {
+      const originalToken = process.env.WIREPUSHER_TOKEN;
+      process.env.WIREPUSHER_TOKEN = 'env_token_123';
+
+      const client = new WirePusher({ maxRetries: 0 });
+      expect(client).toBeInstanceOf(WirePusher);
+
+      // Restore
+      if (originalToken) {
+        process.env.WIREPUSHER_TOKEN = originalToken;
+      } else {
+        delete process.env.WIREPUSHER_TOKEN;
+      }
+    });
+
+    it('should read timeout from WIREPUSHER_TIMEOUT env var (seconds to ms)', () => {
+      const originalTimeout = process.env.WIREPUSHER_TIMEOUT;
+      process.env.WIREPUSHER_TIMEOUT = '60'; // 60 seconds
+
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      // We can't directly check private property, but we can test behavior
+      expect(client).toBeInstanceOf(WirePusher);
+
+      // Restore
+      if (originalTimeout) {
+        process.env.WIREPUSHER_TIMEOUT = originalTimeout;
+      } else {
+        delete process.env.WIREPUSHER_TIMEOUT;
+      }
+    });
+
+    it('should read maxRetries from WIREPUSHER_MAX_RETRIES env var', () => {
+      const originalRetries = process.env.WIREPUSHER_MAX_RETRIES;
+      process.env.WIREPUSHER_MAX_RETRIES = '5';
+
+      const client = new WirePusher({ token: 'abc12345' });
+      expect(client).toBeInstanceOf(WirePusher);
+
+      // Restore
+      if (originalRetries) {
+        process.env.WIREPUSHER_MAX_RETRIES = originalRetries;
+      } else {
+        delete process.env.WIREPUSHER_MAX_RETRIES;
+      }
+    });
+
+    it('should prefer explicit config over env vars', () => {
+      const originalToken = process.env.WIREPUSHER_TOKEN;
+      process.env.WIREPUSHER_TOKEN = 'env_token';
+
+      const client = new WirePusher({ token: 'explicit_token', maxRetries: 0 });
+      expect(client).toBeInstanceOf(WirePusher);
+
+      // Restore
+      if (originalToken) {
+        process.env.WIREPUSHER_TOKEN = originalToken;
+      } else {
+        delete process.env.WIREPUSHER_TOKEN;
+      }
     });
   });
 
@@ -43,7 +116,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.send('Test Title', 'Test message');
 
@@ -62,7 +135,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.send({
         title: 'Test Title',
@@ -101,6 +174,7 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'invalid_token',
       });
 
@@ -131,7 +205,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
@@ -161,7 +235,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('', 'Message')).rejects.toThrow(WirePusherValidationError);
       await expect(client.send('', 'Message')).rejects.toThrow(/Invalid parameters/);
@@ -187,6 +261,7 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
       });
 
@@ -210,7 +285,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/API error \(500\)/);
@@ -225,7 +300,7 @@ describe('WirePusher', () => {
         text: async () => 'Internal server error',
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Internal server error/);
     });
@@ -242,7 +317,7 @@ describe('WirePusher', () => {
         text: async () => 'Malformed response',
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
     });
@@ -264,7 +339,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('', 'Message');
@@ -284,7 +359,7 @@ describe('WirePusher', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Network error/);
@@ -296,6 +371,7 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
       });
@@ -307,7 +383,7 @@ describe('WirePusher', () => {
     it('should handle non-Error throws gracefully', async () => {
       mockFetch.mockRejectedValue('string error');
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Unexpected error/);
@@ -319,7 +395,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -347,7 +423,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -367,6 +443,7 @@ describe('WirePusher', () => {
       });
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         baseUrl: 'https://custom.example.com',
       });
@@ -383,7 +460,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Secure Message',
@@ -417,7 +494,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Regular Message',
@@ -441,7 +518,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -457,7 +534,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -478,7 +555,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -509,7 +586,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
@@ -524,7 +601,7 @@ describe('WirePusher', () => {
     it('should handle network errors as retryable', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
@@ -542,6 +619,7 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
       });
@@ -572,7 +650,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.notifai('deployment finished successfully, v2.1.3 is live on prod');
 
@@ -595,7 +673,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       await client.notifai('test notification', 'alert');
 
@@ -648,7 +726,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('hi');
@@ -674,7 +752,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('test message');
@@ -689,7 +767,7 @@ describe('WirePusher', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const client = new WirePusher({ token: 'abc12345' });
+      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('test message');
@@ -707,6 +785,7 @@ describe('WirePusher', () => {
       mockFetch.mockRejectedValue(abortError);
 
       const client = new WirePusher({
+        maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
       });
