@@ -37,7 +37,7 @@ export class WirePusher {
 
   constructor(config: ClientConfig = {}) {
     // Load from environment variables with fallbacks
-    const resolvedToken = config.token || process.env.WIREPUSHER_TOKEN;
+    const resolvedToken = config.token || process.env['WIREPUSHER_TOKEN'];
     if (!resolvedToken) {
       throw new Error(
         'Token is required. Provide token in config or set WIREPUSHER_TOKEN environment variable.',
@@ -48,8 +48,8 @@ export class WirePusher {
     let resolvedTimeout: number;
     if (config.timeout !== undefined) {
       resolvedTimeout = config.timeout;
-    } else if (process.env.WIREPUSHER_TIMEOUT) {
-      resolvedTimeout = parseInt(process.env.WIREPUSHER_TIMEOUT, 10) * 1000; // Convert seconds to ms
+    } else if (process.env['WIREPUSHER_TIMEOUT']) {
+      resolvedTimeout = parseInt(process.env['WIREPUSHER_TIMEOUT'], 10) * 1000; // Convert seconds to ms
     } else {
       resolvedTimeout = 30000;
     }
@@ -58,8 +58,8 @@ export class WirePusher {
     let resolvedMaxRetries: number;
     if (config.maxRetries !== undefined) {
       resolvedMaxRetries = config.maxRetries;
-    } else if (process.env.WIREPUSHER_MAX_RETRIES) {
-      resolvedMaxRetries = parseInt(process.env.WIREPUSHER_MAX_RETRIES, 10);
+    } else if (process.env['WIREPUSHER_MAX_RETRIES']) {
+      resolvedMaxRetries = parseInt(process.env['WIREPUSHER_MAX_RETRIES'], 10);
     } else {
       resolvedMaxRetries = 3;
     }
