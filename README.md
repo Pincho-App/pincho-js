@@ -89,6 +89,18 @@ try {
 
 Automatic retry with exponential backoff for network errors, 5xx, and 429 (rate limit).
 
+## Smart Rate Limiting
+
+The client automatically handles rate limits and provides access to rate limit information:
+
+```typescript
+await client.send('Alert', 'Message');
+const info = client.getRateLimitInfo();
+console.log(`${info.remaining}/${info.limit} requests left, resets at ${info.reset}`);
+```
+
+Rate limit errors (429) are retried automatically with Retry-After header support for optimal backoff timing.
+
 ## Requirements
 
 - Node.js 18+ (native fetch)
