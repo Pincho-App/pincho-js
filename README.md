@@ -1,24 +1,24 @@
-# WirePusher JavaScript Library
+# Pincho JavaScript Library
 
-Official JavaScript/TypeScript client for [WirePusher](https://wirepusher.dev) push notifications.
+Official JavaScript/TypeScript client for [Pincho](https://pincho.app) push notifications.
 
 ## Installation
 
 ```bash
-npm install wirepusher
+npm install pincho
 ```
 
 ## Quick Start
 
 ```typescript
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 
-// Auto-load token from WIREPUSHER_TOKEN env var
-const client = new WirePusher();
+// Auto-load token from PINCHO_TOKEN env var
+const client = new Pincho();
 await client.send('Deploy Complete', 'Version 1.2.3 deployed');
 
 // Or provide token explicitly
-const client = new WirePusher({ token: 'YOUR_TOKEN' });
+const client = new Pincho({ token: 'YOUR_TOKEN' });
 await client.send('Alert', 'Server CPU at 95%');
 ```
 
@@ -48,19 +48,19 @@ await client.send({
 });
 
 // CommonJS
-const { WirePusher } = require('wirepusher');
+const { Pincho } = require('pincho');
 ```
 
 ## Configuration
 
 ```typescript
 // Environment variables (recommended)
-// WIREPUSHER_TOKEN - API token (required if not passed to constructor)
-// WIREPUSHER_TIMEOUT - Request timeout in seconds (default: 30)
-// WIREPUSHER_MAX_RETRIES - Retry attempts (default: 3)
+// PINCHO_TOKEN - API token (required if not passed to constructor)
+// PINCHO_TIMEOUT - Request timeout in seconds (default: 30)
+// PINCHO_MAX_RETRIES - Retry attempts (default: 3)
 
 // Or explicit configuration
-const client = new WirePusher({
+const client = new Pincho({
   token: 'abc12345',
   timeout: 60000,  // milliseconds
   maxRetries: 5
@@ -71,17 +71,17 @@ const client = new WirePusher({
 
 ```typescript
 import {
-  WirePusher,
-  WirePusherAuthError,
-  WirePusherValidationError
-} from 'wirepusher';
+  Pincho,
+  PinchoAuthError,
+  PinchoValidationError
+} from 'pincho';
 
 try {
   await client.send('Title', 'Message');
 } catch (error) {
-  if (error instanceof WirePusherAuthError) {
+  if (error instanceof PinchoAuthError) {
     console.error('Invalid token');
-  } else if (error instanceof WirePusherValidationError) {
+  } else if (error instanceof PinchoValidationError) {
     console.error('Invalid parameters');
   }
 }
@@ -110,9 +110,9 @@ Rate limit errors (429) are retried automatically with Retry-After header suppor
 ## Links
 
 - **Get Token**: App → Settings → Help → copy token
-- **Documentation**: https://wirepusher.dev/help
-- **Repository**: https://gitlab.com/wirepusher/wirepusher-js
-- **npm**: https://www.npmjs.com/package/wirepusher
+- **Documentation**: https://pincho.app/help
+- **Repository**: https://gitlab.com/pincho-app/pincho-js
+- **npm**: https://www.npmjs.com/package/pincho
 
 ## License
 

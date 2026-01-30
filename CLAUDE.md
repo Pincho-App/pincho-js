@@ -1,10 +1,10 @@
-# CLAUDE.md - WirePusher JavaScript/TypeScript Client Library
+# CLAUDE.md - Pincho JavaScript/TypeScript Client Library
 
-Context file for AI-powered development assistance on the WirePusher JavaScript/TypeScript client library project.
+Context file for AI-powered development assistance on the Pincho JavaScript/TypeScript client library project.
 
 ## Project Overview
 
-**WirePusher JavaScript Client Library** is a TypeScript/JavaScript client library for sending push notifications via [WirePusher](https://wirepusher.dev).
+**Pincho JavaScript Client Library** is a TypeScript/JavaScript client library for sending push notifications via [Pincho](https://pincho.app).
 
 - **Language**: TypeScript (compiles to JavaScript ES2020+)
 - **Runtime**: Node.js 18+ (native fetch API)
@@ -15,10 +15,10 @@ Context file for AI-powered development assistance on the WirePusher JavaScript/
 ## Architecture
 
 ```
-wirepusher-js/
+pincho-js/
 ├── src/                      # Source code (TypeScript)
 │   ├── index.ts              # Public API exports
-│   ├── client.ts             # Main WirePusher client class
+│   ├── client.ts             # Main Pincho client class
 │   ├── types.ts              # TypeScript type definitions
 │   ├── errors.ts             # Custom error classes
 │   ├── crypto.ts             # AES-128-CBC encryption
@@ -37,7 +37,6 @@ wirepusher-js/
 ├── docs/                     # Documentation
 ├── package.json              # Package configuration
 └── tsup.config.ts            # Build configuration
-
 ```
 
 ## Key Features
@@ -48,7 +47,6 @@ wirepusher-js/
 - Uses Node.js 18+ native fetch (no axios/node-fetch needed)
 - AbortController for timeout handling
 - HTTP/2 support out of the box
-- No external HTTP client dependencies
 
 **Crypto module**:
 - Uses Node.js built-in `crypto` module for encryption
@@ -58,44 +56,22 @@ wirepusher-js/
 
 **ESM (ES Modules)**:
 ```typescript
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 ```
 
 **CommonJS**:
 ```javascript
-const { WirePusher } = require('wirepusher');
+const { Pincho } = require('pincho');
 ```
 
-Build process (tsup):
-- `dist/index.js` - ES modules
-- `dist/index.cjs` - CommonJS
-- `dist/index.d.ts` - TypeScript definitions (ESM)
-- `dist/index.d.cts` - TypeScript definitions (CJS)
+### 3. API Methods
 
-### 3. TypeScript-First Design
-
-**Full type safety**:
-- All public APIs have comprehensive type definitions
-- JSDoc comments on all types and methods
-- Strict TypeScript compilation
-- IDE autocomplete and IntelliSense support
-
-**Type exports**:
-- `ClientConfig` - Client initialization options
-- `NotificationOptions` - Notification parameters
-- `NotificationResponse` - API response structure
-
-### 4. API Method
-
-**send()** - Send notifications with method overloading:
-
-**Simple form**:
+**send()** - Send notifications:
 ```typescript
+// Simple form
 await client.send('Deploy Complete', 'v1.2.3 deployed');
-```
 
-**Full options**:
-```typescript
+// Full options
 await client.send({
   title: 'Deploy Complete',
   message: 'v1.2.3 deployed',
@@ -103,76 +79,52 @@ await client.send({
   tags: ['production', 'release'],
   imageURL: 'https://example.com/image.png',
   actionURL: 'https://example.com/action',
-  encryptionPassword: 'secret'  // Optional
+  encryptionPassword: 'secret'
 });
 ```
 
-### 5. Error Handling
-
-Custom error classes with proper inheritance:
-
-- `WirePusherError` (base class) - General API errors
-- `WirePusherAuthError` (401, 403) - Authentication failures
-- `WirePusherValidationError` (400, 404) - Invalid parameters
-
-All errors extend native `Error` class for proper stack traces.
-
-### 6. Timeout Handling
-
-**AbortController-based timeouts**:
-- Default: 30 seconds
-- Configurable via `timeout` parameter
-- Proper cleanup on timeout
-- Clear error messages
-
-Implementation in `client.ts`:
+**notifai()** - AI-powered notifications:
 ```typescript
-const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-try {
-  const response = await fetch(url, { signal: controller.signal });
-} finally {
-  clearTimeout(timeoutId);
-}
+const response = await client.notifai('deployment finished, v2.1.3 is live');
+console.log(response.notification); // AI-generated title, message, tags
 ```
 
-### 7. Encryption
+### 4. Error Handling
 
-**AES-128-CBC** encryption matching mobile app:
-- SHA-1-based key derivation (for app compatibility)
-- Custom Base64 encoding (URL-safe: `-` `_` `.` instead of `+` `/` `=`)
-- Only message encrypted (title, type, tags remain visible)
-- Password must match type configuration in app
+Custom error classes:
+- `PinchoError` (base class) - General API errors
+- `PinchoAuthError` (401, 403) - Authentication failures
+- `PinchoValidationError` (400, 404) - Invalid parameters
 
-Implementation: `crypto.ts`
+All errors have `isRetryable` property.
+
+### 5. Automatic Retry Logic
+
+- **Default**: 3 retries with exponential backoff
+- **Backoff strategy**: 1s, 2s, 4s, 8s (capped at 30s)
+- **Rate limit handling**: Uses Retry-After header if present
+- **Retryable**: Network errors, 5xx, 429
+- **Non-retryable**: 400, 401, 403, 404
 
 ## Configuration
 
-Environment variable support with constructor-based overrides:
-
 ```typescript
 // Auto-load from environment variables
-const client = new WirePusher();  // reads WIREPUSHER_TOKEN
+const client = new Pincho();  // reads PINCHO_TOKEN
 
-// Explicit token
-const client = new WirePusher({ token: 'abc12345' });
-
-// All options
-const client = new WirePusher({
-  token: 'abc12345',           // Or WIREPUSHER_TOKEN env var
-  timeout: 60000,              // Or WIREPUSHER_TIMEOUT (seconds) env var, default: 30000ms
-  maxRetries: 5,               // Or WIREPUSHER_MAX_RETRIES env var, default: 3
+// Explicit configuration
+const client = new Pincho({
+  token: 'abc12345',           // Or PINCHO_TOKEN env var
+  timeout: 60000,              // Or PINCHO_TIMEOUT (seconds) env var
+  maxRetries: 5,               // Or PINCHO_MAX_RETRIES env var
   baseUrl: '...'               // Custom base URL (for testing)
 });
 ```
 
 **Environment Variables**:
-- `WIREPUSHER_TOKEN` - API token (required if not passed to constructor)
-- `WIREPUSHER_TIMEOUT` - Request timeout in seconds (default: 30)
-- `WIREPUSHER_MAX_RETRIES` - Maximum retry attempts (default: 3)
-
-**Authentication**: Token-only via `token` parameter or `WIREPUSHER_TOKEN` env var.
+- `PINCHO_TOKEN` - API token (required if not passed to constructor)
+- `PINCHO_TIMEOUT` - Request timeout in seconds (default: 30)
+- `PINCHO_MAX_RETRIES` - Maximum retry attempts (default: 3)
 
 ## Dependencies
 
@@ -181,86 +133,17 @@ const client = new WirePusher({
 - Native crypto module (Node.js)
 
 **Development**:
-- `typescript ^5.3.3` - TypeScript compiler
-- `tsup ^8.0.1` - Build tool (zero-config bundler)
-- `vitest ^1.0.4` - Testing framework (Vite-powered)
-- `@vitest/coverage-v8 ^1.0.0` - Coverage reporting
-- `eslint ^8.56.0` - Linting
-- `@typescript-eslint/eslint-plugin ^6.15.0` - TypeScript ESLint rules
-- `@typescript-eslint/parser ^6.15.0` - TypeScript parser for ESLint
-- `prettier ^3.1.1` - Code formatting
-- `@types/node ^20.10.0` - Node.js type definitions
-
-## Build Process
-
-**tsup configuration** (`tsup.config.ts`):
-- Entry: `src/index.ts`
-- Formats: ESM (`index.js`) and CJS (`index.cjs`)
-- TypeScript declarations: `.d.ts` and `.d.cts`
-- Target: ES2020
-- Minification: No (for debugging)
-- Source maps: Yes
-- Clean dist on build
-
-**Build command**:
-```bash
-npm run build
-```
-
-## Testing
-
-**Vitest** test framework:
-- Fast, Vite-powered testing
-- ESM-first (matches package architecture)
-- Built-in TypeScript support
-- Coverage with V8
-
-**Test structure**:
-```typescript
-describe('WirePusher', () => {
-  describe('send', () => {
-    it('should send notification with title and message', async () => {
-      // Arrange
-      // Act
-      // Assert
-    });
-  });
-});
-```
-
-**Coverage targets**: >90% for all metrics
-
-## Recent Changes
-
-### v1.0.0 (Current - Alpha)
-
-**Added**:
-- Initial release with TypeScript support
-- Zero-dependency implementation using native fetch
-- Dual package support (ESM/CJS)
-- Custom error classes for better error handling
-- Method overloading for flexible API
-- Configurable timeouts using AbortController
-- AES-128-CBC encryption support
-- Comprehensive test suite (>90% coverage)
-
-**Features**:
-- Simple API: `send(title, message)`
-- Advanced API: `send(options)`
-- Support for types, tags, images, action URLs
-- Authentication via API tokens
-- Custom base URL for testing
+- `typescript` - TypeScript compiler
+- `tsup` - Build tool (zero-config bundler)
+- `vitest` - Testing framework
+- `eslint` - Linting
+- `prettier` - Code formatting
 
 ## Development
 
 ### Setup
 
 ```bash
-# Clone repository
-git clone https://gitlab.com/wirepusher/wirepusher-js.git
-cd wirepusher-js
-
-# Install dependencies
 npm install
 ```
 
@@ -288,145 +171,12 @@ npm run format:check        # Check formatting
 npm run build               # Build package
 ```
 
-Outputs:
-- `dist/index.js` - ESM build
-- `dist/index.cjs` - CommonJS build
-- `dist/index.d.ts` - TypeScript definitions (ESM)
-- `dist/index.d.cts` - TypeScript definitions (CJS)
-
-## Common Development Tasks
-
-### Adding a Feature
-
-1. Add implementation to `src/client.ts`
-2. Update TypeScript types in `src/types.ts`
-3. Export in `src/index.ts` if needed
-4. Add tests in `tests/client.test.ts`
-5. Update README with examples
-6. Add to CHANGELOG
-
-### Adding an Error Type
-
-1. Add class to `src/errors.ts`
-2. Extend `WirePusherError` base class
-3. Update error handling in `client.ts`
-4. Export in `src/index.ts`
-5. Add tests in `tests/errors.test.ts`
-6. Update README error handling section
-
-### Updating Types
-
-1. Modify interfaces in `src/types.ts`
-2. Add JSDoc comments
-3. Update client implementation
-4. Run `npm run typecheck`
-5. Update README documentation
-6. Add to CHANGELOG
-
 ## Testing Philosophy
 
 - **Unit tests**: Test client methods in isolation
 - **Mock fetch**: Use Vitest mocking for fetch API
 - **Type safety**: Run TypeScript compiler (`typecheck`)
 - **Coverage target**: >90% for statements, branches, functions, lines
-- **Test naming**: Descriptive `it('should ...')` statements
-
-## API Integration
-
-### Endpoints
-
-- `POST /send` - Send notifications
-
-### Authentication
-
-Token via `token` parameter in constructor.
-
-### Response Format
-
-**Success response:**
-```json
-{
-  "status": "success",
-  "message": "Notification sent successfully"
-}
-```
-
-**Error response:**
-```json
-{
-  "status": "error",
-  "error": {
-    "type": "validation_error",
-    "code": "missing_required_field",
-    "message": "Title is required",
-    "param": "title"
-  }
-}
-```
-
-The library parses both flat and nested error formats for backward compatibility.
-
-## Package Publishing
-
-**npm package**: `@wirepusher/client`
-
-**package.json exports**:
-```json
-{
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  }
-}
-```
-
-**Published files**:
-- `dist/` directory only (via `files` field)
-
-## Framework Integration Examples
-
-### Express.js
-
-```typescript
-import express from 'express';
-import { WirePusher } from 'wirepusher';
-
-const app = express();
-const client = new WirePusher({ token: process.env.WIREPUSHER_TOKEN! });
-
-app.post('/deploy', async (req, res) => {
-  await client.send('Deploy Complete', `Version ${req.body.version}`);
-  res.json({ status: 'success' });
-});
-```
-
-### Next.js API Route
-
-```typescript
-// app/api/notify/route.ts
-import { WirePusher } from 'wirepusher';
-import { NextResponse } from 'next/server';
-
-const client = new WirePusher({ token: process.env.WIREPUSHER_TOKEN! });
-
-export async function POST(request: Request) {
-  const { title, message } = await request.json();
-  await client.send(title, message);
-  return NextResponse.json({ success: true });
-}
-```
 
 ## Notes for AI Assistants
 
@@ -437,37 +187,11 @@ export async function POST(request: Request) {
 - **Error handling**: Use custom error classes, not generic Error
 - **Testing**: Write tests for all features (>90% coverage)
 - **Documentation**: Update README for user-facing changes
-- **Formatting**: Use Prettier and ESLint (run before committing)
-- **Type safety**: Run `npm run typecheck` before committing
-- **Build verification**: Run `npm run build` to verify dual package output
-
-## Project Status
-
-**Current**: Production-ready v1.0.0
-
-**Completed**:
-- ✅ TypeScript implementation with full type safety
-- ✅ Zero runtime dependencies (native fetch)
-- ✅ Dual package support (ESM/CJS)
-- ✅ Custom error classes with isRetryable property
-- ✅ AES-128-CBC encryption
-- ✅ Comprehensive test suite (101 tests, >90% coverage)
-- ✅ Method overloading for flexible API
-- ✅ Timeout handling with AbortController
-- ✅ NotifAI endpoint for AI-powered notifications
-- ✅ Automatic retry logic with exponential backoff
-- ✅ Rate limit handling (429) with longer backoff
-- ✅ Environment variable support (WIREPUSHER_TOKEN, WIREPUSHER_TIMEOUT, WIREPUSHER_MAX_RETRIES)
-- ✅ Tag normalization (lowercase, trim, strip invalid chars, dedupe)
-- ✅ CI/CD with Cloud Build
-
-**Not Needed**:
-- ❌ Config file support (not standard for libraries)
 
 ## Links
 
-- **Repository**: https://gitlab.com/wirepusher/wirepusher-js
-- **Issues**: https://gitlab.com/wirepusher/wirepusher-js/-/issues
-- **npm Package**: https://www.npmjs.com/package/@wirepusher/client
-- **API Docs**: https://wirepusher.com/docs
-- **App**: https://wirepusher.dev
+- **Repository**: https://gitlab.com/pincho-app/pincho-js
+- **Issues**: https://gitlab.com/pincho-app/pincho-js/-/issues
+- **npm Package**: https://www.npmjs.com/package/pincho
+- **API Docs**: https://pincho.app/help
+- **App**: https://pincho.app

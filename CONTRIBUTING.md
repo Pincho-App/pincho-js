@@ -1,6 +1,6 @@
-# Contributing to WirePusher JavaScript Client Library
+# Contributing to Pincho JavaScript Client Library
 
-Thank you for your interest in contributing to the WirePusher JavaScript Client Library! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the Pincho JavaScript Client Library! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -25,7 +25,7 @@ Before creating bug reports, please check the existing issues to avoid duplicate
 ## Bug: Client throws TypeError on successful response
 
 **Environment:**
-- WirePusher Client Library: 1.0.0
+- Pincho Client Library: 1.0.0
 - Node.js: 18.17.0
 - OS: macOS 13.4
 
@@ -43,7 +43,7 @@ Throws TypeError: Cannot read property 'status' of undefined
 **Stack Trace:**
 ```
 TypeError: Cannot read property 'status' of undefined
-    at WirePusher.send (client.ts:129)
+    at Pincho.send (client.ts:129)
     ...
 ```
 
@@ -84,7 +84,7 @@ Enhancement suggestions are tracked as GitLab issues. When creating an enhanceme
 
 1. **Clone the repository:**
    ```bash
-   git clone https://gitlab.com/wirepusher/wirepusher-js.git
+   git clone https://gitlab.com/pincho/pincho-js.git
    cd javascript-sdk
    ```
 
@@ -104,7 +104,7 @@ Enhancement suggestions are tracked as GitLab issues. When creating an enhanceme
 ```
 javascript-sdk/
 ├── src/              # Source code
-│   ├── client.ts     # Main WirePusher client
+│   ├── client.ts     # Main Pincho client
 │   ├── errors.ts     # Custom error classes
 │   ├── types.ts      # TypeScript type definitions
 │   └── index.ts      # Public API exports
@@ -152,7 +152,7 @@ npm run format
 
 ### Error Handling
 
-- Always use the custom error classes (`WirePusherError`, `WirePusherAuthError`, `WirePusherValidationError`)
+- Always use the custom error classes (`PinchoError`, `PinchoAuthError`, `PinchoValidationError`)
 - Provide clear error messages that help users understand what went wrong
 - Include context in error messages when helpful
 - Use proper error chaining when wrapping errors
@@ -163,13 +163,13 @@ npm run format
 try {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new WirePusherAuthError('Invalid credentials');
+    throw new PinchoAuthError('Invalid credentials');
   }
 } catch (error) {
-  if (error instanceof WirePusherError) {
+  if (error instanceof PinchoError) {
     throw error;
   }
-  throw new WirePusherError(`Network error: ${error.message}`);
+  throw new PinchoError(`Network error: ${error.message}`);
 }
 ```
 
@@ -184,13 +184,13 @@ try {
 
 ```typescript
 /**
- * Send a notification via WirePusher API.
+ * Send a notification via Pincho API.
  *
  * @param title - Notification title
  * @param message - Notification message
  * @returns Promise resolving to the API response
- * @throws {WirePusherAuthError} Invalid credentials
- * @throws {WirePusherValidationError} Invalid parameters
+ * @throws {PinchoAuthError} Invalid credentials
+ * @throws {PinchoValidationError} Invalid parameters
  *
  * @example
  * ```typescript
@@ -332,9 +332,9 @@ test(client): add tests for timeout handling
 
 ## Getting Help
 
-- **GitLab Issues:** https://gitlab.com/wirepusher/wirepusher-js/-/issues
-- **Email:** support@wirepusher.com
-- **Documentation:** https://wirepusher.com/api
+- **GitLab Issues:** https://gitlab.com/pincho/pincho-js/-/issues
+- **Email:** support@pincho.com
+- **Documentation:** https://pincho.com/api
 
 ## Recognition
 
@@ -343,4 +343,4 @@ Contributors will be recognized in:
 - Release notes in CHANGELOG.md
 - GitLab's contribution graphs
 
-Thank you for contributing to WirePusher!
+Thank you for contributing to Pincho!

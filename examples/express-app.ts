@@ -1,20 +1,20 @@
 /**
  * Express.js Integration Example
  *
- * This example shows how to integrate WirePusher into an Express.js application.
+ * This example shows how to integrate Pincho into an Express.js application.
  * Includes endpoints for sending notifications and handling webhooks.
  */
 
 import express, { Request, Response, NextFunction } from 'express';
-import { WirePusher, WirePusherError } from 'wirepusher';
+import { Pincho, PinchoError } from 'pincho';
 
 // Initialize Express app
 const app = express();
 app.use(express.json());
 
-// Initialize WirePusher client (singleton pattern)
-const notificationClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
+// Initialize Pincho client (singleton pattern)
+const notificationClient = new Pincho({
+  token: process.env.PINCHO_TOKEN || 'abc12345',
   timeout: 30000,
 });
 
@@ -155,7 +155,7 @@ app.post(
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', error);
 
-  if (error instanceof WirePusherError) {
+  if (error instanceof PinchoError) {
     return res.status(500).json({
       error: 'Failed to send notification',
       message: error.message,
@@ -178,7 +178,7 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ WirePusher client initialized`);
+  console.log(`✓ Pincho client initialized`);
   console.log(`\nAvailable endpoints:`);
   console.log(`  POST /notify - Send simple notification`);
   console.log(`  POST /notify/advanced - Send advanced notification`);

@@ -1,24 +1,24 @@
 {
-  "name": "wirepusher",
-  "version": "1.0.0-alpha.7",
-  "description": "Official WirePusher Client Library for JavaScript and TypeScript",
+  "name": "pincho",
+  "version": "1.0.0-alpha.1",
+  "description": "Official Pincho Client Library for JavaScript and TypeScript",
   "keywords": [
-    "wirepusher",
+    "pincho",
     "push-notifications",
     "notifications",
     "alerts",
     "typescript",
     "nodejs"
   ],
-  "author": "WirePusher <support@wirepusher.com>",
+  "author": "Pincho <support@pincho.app>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/wirepusher/wirepusher-js.git"
+    "url": "https://gitlab.com/pincho-app/pincho-js.git"
   },
-  "homepage": "https://gitlab.com/wirepusher/wirepusher-js",
+  "homepage": "https://gitlab.com/pincho-app/pincho-js",
   "bugs": {
-    "url": "https://gitlab.com/wirepusher/wirepusher-js/-/issues"
+    "url": "https://gitlab.com/pincho-app/pincho-js/-/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

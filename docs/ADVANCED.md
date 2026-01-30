@@ -1,6 +1,6 @@
 # Advanced Usage
 
-This document covers advanced features and configuration options for the WirePusher JavaScript/TypeScript client library.
+This document covers advanced features and configuration options for the Pincho JavaScript/TypeScript client library.
 
 ## Table of Contents
 
@@ -19,9 +19,9 @@ The client automatically tracks rate limit information from API response headers
 ### Accessing Rate Limit Information
 
 ```typescript
-import { WirePusher, type RateLimitInfo } from 'wirepusher';
+import { Pincho, type RateLimitInfo } from 'pincho';
 
-const client = new WirePusher();
+const client = new Pincho();
 
 // Send a notification
 await client.send('Deploy', 'Version 1.2.3 deployed');
@@ -43,7 +43,7 @@ if (info) {
 ### Proactive Rate Limit Checking
 
 ```typescript
-async function sendWithRateLimitCheck(client: WirePusher, title: string, message: string) {
+async function sendWithRateLimitCheck(client: Pincho, title: string, message: string) {
   const info = client.getRateLimitInfo();
 
   if (info && info.remaining === 0) {
@@ -73,7 +73,7 @@ When rate limited (HTTP 429), the API may return a `Retry-After` header indicati
 The client automatically respects `Retry-After` headers:
 
 ```typescript
-const client = new WirePusher({
+const client = new Pincho({
   maxRetries: 3  // Will retry up to 3 times
 });
 
@@ -94,12 +94,12 @@ await client.send('Title', 'Message');
 ### Accessing Retry-After in Errors
 
 ```typescript
-import { WirePusherError, ErrorCode } from 'wirepusher';
+import { PinchoError, ErrorCode } from 'pincho';
 
 try {
   await client.send('Title', 'Message');
 } catch (error) {
-  if (error instanceof WirePusherError && error.code === ErrorCode.RATE_LIMIT) {
+  if (error instanceof PinchoError && error.code === ErrorCode.RATE_LIMIT) {
     if (error.retryAfterSeconds !== undefined) {
       console.log(`Rate limited. Retry after ${error.retryAfterSeconds} seconds`);
     }
@@ -113,20 +113,20 @@ try {
 
 ```bash
 # Required (if not provided in constructor)
-export WIREPUSHER_TOKEN=your_api_token
+export PINCHO_TOKEN=your_api_token
 
 # Optional
-export WIREPUSHER_TIMEOUT=60        # Timeout in seconds (default: 30)
-export WIREPUSHER_MAX_RETRIES=5     # Retry attempts (default: 3)
+export PINCHO_TIMEOUT=60        # Timeout in seconds (default: 30)
+export PINCHO_MAX_RETRIES=5     # Retry attempts (default: 3)
 ```
 
 ### Constructor Options
 
 ```typescript
-import { WirePusher, type ClientConfig } from 'wirepusher';
+import { Pincho, type ClientConfig } from 'pincho';
 
 const config: ClientConfig = {
-  // API token (required if WIREPUSHER_TOKEN not set)
+  // API token (required if PINCHO_TOKEN not set)
   token: 'your_token',
 
   // Request timeout in milliseconds (default: 30000)
@@ -139,13 +139,13 @@ const config: ClientConfig = {
   baseUrl: 'https://custom.api.server'
 };
 
-const client = new WirePusher(config);
+const client = new Pincho(config);
 ```
 
 ### Disabling Retries
 
 ```typescript
-const client = new WirePusher({
+const client = new Pincho({
   maxRetries: 0  // No automatic retries
 });
 ```
@@ -154,7 +154,7 @@ const client = new WirePusher({
 
 ```typescript
 // 2 minute timeout for slow networks
-const client = new WirePusher({
+const client = new Pincho({
   timeout: 120000  // milliseconds
 });
 ```
@@ -168,12 +168,12 @@ The library exports comprehensive TypeScript types for full type safety:
 ```typescript
 import {
   // Main client
-  WirePusher,
+  Pincho,
 
   // Error classes
-  WirePusherError,
-  WirePusherAuthError,
-  WirePusherValidationError,
+  PinchoError,
+  PinchoAuthError,
+  PinchoValidationError,
 
   // Error codes enum
   ErrorCode,
@@ -187,7 +187,7 @@ import {
 
   // Utility functions
   normalizeTags
-} from 'wirepusher';
+} from 'pincho';
 ```
 
 ### Type Definitions
@@ -254,15 +254,15 @@ enum ErrorCode {
 
 ```typescript
 Error
-└── WirePusherError (base)
-    ├── WirePusherAuthError (401, 403)
-    └── WirePusherValidationError (400, 404)
+└── PinchoError (base)
+    ├── PinchoAuthError (401, 403)
+    └── PinchoValidationError (400, 404)
 ```
 
 ### Error Properties
 
 ```typescript
-interface WirePusherError extends Error {
+interface PinchoError extends Error {
   code: ErrorCode;            // Machine-readable error code
   isRetryable: boolean;       // Whether error can be retried
   retryAfterSeconds?: number; // Retry-After value (for 429)
@@ -273,31 +273,31 @@ interface WirePusherError extends Error {
 
 ```typescript
 import {
-  WirePusher,
-  WirePusherError,
-  WirePusherAuthError,
-  WirePusherValidationError,
+  Pincho,
+  PinchoError,
+  PinchoAuthError,
+  PinchoValidationError,
   ErrorCode
-} from 'wirepusher';
+} from 'pincho';
 
 try {
   await client.send('Title', 'Message');
 } catch (error) {
-  if (error instanceof WirePusherAuthError) {
+  if (error instanceof PinchoAuthError) {
     // Handle auth errors (401, 403)
     if (error.code === ErrorCode.AUTH_INVALID) {
       console.error('Invalid token - check credentials');
     } else if (error.code === ErrorCode.AUTH_FORBIDDEN) {
       console.error('Account disabled or insufficient permissions');
     }
-  } else if (error instanceof WirePusherValidationError) {
+  } else if (error instanceof PinchoValidationError) {
     // Handle validation errors (400, 404)
     if (error.code === ErrorCode.NOT_FOUND) {
       console.error('Resource not found');
     } else {
       console.error('Invalid parameters:', error.message);
     }
-  } else if (error instanceof WirePusherError) {
+  } else if (error instanceof PinchoError) {
     // Handle other API errors
     switch (error.code) {
       case ErrorCode.NETWORK_ERROR:
@@ -336,7 +336,7 @@ try {
 ### Configuration in Mobile App
 
 Before using encryption:
-1. Open WirePusher app
+1. Open Pincho app
 2. Go to notification type settings
 3. Enable encryption for that type
 4. Set the same password as in your code
@@ -387,14 +387,14 @@ const response = await client.notifai('server CPU at 95%', 'alert');
 
 ```javascript
 // ESM (Node.js 18+)
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 ```
 
 ### CommonJS Support
 
 ```javascript
 // CommonJS
-const { WirePusher } = require('wirepusher');
+const { Pincho } = require('pincho');
 ```
 
 ### Zero Runtime Dependencies

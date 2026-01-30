@@ -1,15 +1,15 @@
-# WirePusher Examples
+# Pincho Examples
 
-Comprehensive examples for the WirePusher JavaScript/TypeScript client library, demonstrating various use cases and integration patterns.
+Comprehensive examples for the Pincho JavaScript/TypeScript client library, demonstrating various use cases and integration patterns.
 
 ## Setup
 
 ```bash
 # Install the library
-npm install wirepusher
+npm install pincho
 
 # Set your API token
-export WIREPUSHER_TOKEN=your_token_here
+export PINCHO_TOKEN=your_token_here
 
 # For TypeScript examples
 npm install -D typescript ts-node @types/node
@@ -111,7 +111,7 @@ The `nextjs-api-route.ts` file contains examples for:
 
 ```bash
 # Set encryption password (must match app configuration)
-export WIREPUSHER_ENCRYPTION_PASSWORD=your_strong_password
+export PINCHO_ENCRYPTION_PASSWORD=your_strong_password
 
 npx ts-node examples/encryption.ts
 ```
@@ -140,20 +140,20 @@ npx ts-node examples/rate-limits.ts
 ### Singleton Client
 
 ```typescript
-// lib/wirepusher.ts
-import { WirePusher } from 'wirepusher';
+// lib/pincho.ts
+import { Pincho } from 'pincho';
 
-export const notificationClient = new WirePusher();
+export const notificationClient = new Pincho();
 // Reuse across your application
 ```
 
 ### Environment-Based Configuration
 
 ```typescript
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN,
-  timeout: parseInt(process.env.WIREPUSHER_TIMEOUT || '30') * 1000,
-  maxRetries: parseInt(process.env.WIREPUSHER_MAX_RETRIES || '3')
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN,
+  timeout: parseInt(process.env.PINCHO_TIMEOUT || '30') * 1000,
+  maxRetries: parseInt(process.env.PINCHO_MAX_RETRIES || '3')
 });
 ```
 
@@ -161,22 +161,22 @@ const client = new WirePusher({
 
 ```typescript
 import {
-  WirePusherAuthError,
-  WirePusherValidationError,
-  WirePusherError,
+  PinchoAuthError,
+  PinchoValidationError,
+  PinchoError,
   ErrorCode
-} from 'wirepusher';
+} from 'pincho';
 
 try {
   await client.send('Title', 'Message');
 } catch (error) {
-  if (error instanceof WirePusherAuthError) {
+  if (error instanceof PinchoAuthError) {
     // Invalid token or forbidden (401/403)
     console.error('Authentication failed');
-  } else if (error instanceof WirePusherValidationError) {
+  } else if (error instanceof PinchoValidationError) {
     // Bad request or not found (400/404)
     console.error('Invalid parameters');
-  } else if (error instanceof WirePusherError) {
+  } else if (error instanceof PinchoError) {
     // Other API errors
     if (error.code === ErrorCode.RATE_LIMIT) {
       console.error('Rate limited');
@@ -218,12 +218,12 @@ app.post('/webhook/github', async (req, res) => {
 
 ## Testing Examples
 
-These examples use fallback tokens (`abc12345`) when `WIREPUSHER_TOKEN` is not set. For actual use:
+These examples use fallback tokens (`abc12345`) when `PINCHO_TOKEN` is not set. For actual use:
 
-1. Get your token from the WirePusher app (Settings > Help > copy token)
+1. Get your token from the Pincho app (Settings > Help > copy token)
 2. Set the environment variable:
    ```bash
-   export WIREPUSHER_TOKEN=your_actual_token
+   export PINCHO_TOKEN=your_actual_token
    ```
 3. Run the example
 

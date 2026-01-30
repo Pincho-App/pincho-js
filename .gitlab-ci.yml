@@ -1,0 +1,131 @@
+# GitLab CI configuration for Pincho JavaScript SDK
+#
+# Triggers:
+# - Push to any branch: Run lint, typecheck, tests, and build
+# - Git tag (v*): Run full pipeline and publish to npm
+#
+# Required CI/CD Variables (set at group level):
+# - NPM_TOKEN: npm authentication token for publishing
+# - PINCHO_TOKEN: Pincho API token for release notifications
+
+stages:
+  - lint
+  - test
+  - build
+  - publish
+  - notify
+
+variables:
+  NODE_VERSION: "20"
+
+# Lint with ESLint
+lint:eslint:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run lint
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# Check code formatting with Prettier
+lint:prettier:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run format:check
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# TypeScript type checking
+lint:typecheck:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run typecheck
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# Run tests with coverage
+test:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run test:coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# Build package
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm run build
+    - |
+      echo "Verifying package contents..."
+      ls -lh dist/
+      test -f dist/index.js && echo "✓ ESM build exists" || exit 1
+      test -f dist/index.cjs && echo "✓ CJS build exists" || exit 1
+      test -f dist/index.d.ts && echo "✓ TypeScript definitions exist" || exit 1
+      test -f dist/index.d.cts && echo "✓ CJS TypeScript definitions exist" || exit 1
+      echo "✅ Package verification successful!"
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# Publish to npm (only on tags)
+publish:npm:
+  stage: publish
+  image: node:${NODE_VERSION}
+  dependencies:
+    - build
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+  script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    - npm publish --access public
+    - echo "✅ Published pincho@${CI_COMMIT_TAG} to npm"
+
+# Send release notification (only on tags)
+notify:
+  stage: notify
+  image: curlimages/curl:latest
+  dependencies: []
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+  script:
+    - |
+      curl -s -X POST https://dev-api.pincho.app/notifai \
+        -H "Authorization: Bearer ${PINCHO_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"text\": \"Pincho JavaScript SDK ${CI_COMMIT_TAG} published to npm successfully. Install via npm install pincho. View package at https://www.npmjs.com/package/pincho\",
+          \"type\": \"release\"
+        }"
+      echo "✓ Release notification sent via NotifAI"

@@ -1,24 +1,24 @@
 /**
- * Configuration options for the WirePusher client.
+ * Configuration options for the Pincho client.
  */
 export interface ClientConfig {
   /**
-   * WirePusher token for authentication.
-   * If not provided, reads from WIREPUSHER_TOKEN environment variable.
+   * Pincho token for authentication.
+   * If not provided, reads from PINCHO_TOKEN environment variable.
    * @example 'abc12345'
    */
   token?: string;
 
   /**
    * Request timeout in milliseconds.
-   * If not provided, reads from WIREPUSHER_TIMEOUT env var (in seconds) or defaults to 30000ms.
+   * If not provided, reads from PINCHO_TIMEOUT env var (in seconds) or defaults to 30000ms.
    * @default 30000
    */
   timeout?: number;
 
   /**
    * Maximum number of retry attempts for transient errors.
-   * If not provided, reads from WIREPUSHER_MAX_RETRIES env var or defaults to 3.
+   * If not provided, reads from PINCHO_MAX_RETRIES env var or defaults to 3.
    * Set to 0 to disable retries.
    * @default 3
    */
@@ -26,7 +26,7 @@ export interface ClientConfig {
 
   /**
    * Custom base URL (mainly for testing).
-   * @default 'https://api.wirepusher.dev'
+   * @default 'https://api.pincho.app'
    */
   baseUrl?: string;
 }
@@ -71,7 +71,7 @@ export interface NotificationOptions {
 
   /**
    * Optional password for AES-128-CBC encryption of message content.
-   * Must match the type configuration in the WirePusher app.
+   * Must match the type configuration in the Pincho app.
    * Only the message field is encrypted; title, type, and other metadata remain unencrypted.
    * @example 'your_strong_password'
    */
@@ -79,7 +79,7 @@ export interface NotificationOptions {
 }
 
 /**
- * Response from the WirePusher API.
+ * Response from the Pincho API.
  */
 export interface NotificationResponse {
   /**
@@ -94,7 +94,7 @@ export interface NotificationResponse {
 }
 
 /**
- * NotifAI response from the WirePusher API.
+ * NotifAI response from the Pincho API.
  */
 export interface NotifAIResponse {
   /**

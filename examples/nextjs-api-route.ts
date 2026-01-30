@@ -1,22 +1,22 @@
 /**
  * Next.js API Route Example
  *
- * This example shows how to use WirePusher in Next.js App Router API routes.
+ * This example shows how to use Pincho in Next.js App Router API routes.
  * Works with Next.js 13+ (App Router).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  WirePusher,
-  WirePusherAuthError,
-  WirePusherValidationError,
-  WirePusherError,
-} from 'wirepusher';
+  Pincho,
+  PinchoAuthError,
+  PinchoValidationError,
+  PinchoError,
+} from 'pincho';
 
-// Initialize WirePusher client (singleton pattern)
+// Initialize Pincho client (singleton pattern)
 // This client instance is reused across requests
-const notificationClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
+const notificationClient = new Pincho({
+  token: process.env.PINCHO_TOKEN!,
   timeout: 30000,
 });
 
@@ -58,17 +58,17 @@ export async function POST(request: NextRequest) {
     console.error('Failed to send notification:', error);
 
     // Handle specific error types
-    if (error instanceof WirePusherAuthError) {
+    if (error instanceof PinchoAuthError) {
       return NextResponse.json(
         {
           error: 'Authentication failed',
-          message: 'Invalid WirePusher credentials',
+          message: 'Invalid Pincho credentials',
         },
         { status: 401 }
       );
     }
 
-    if (error instanceof WirePusherValidationError) {
+    if (error instanceof PinchoValidationError) {
       return NextResponse.json(
         {
           error: 'Validation error',
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (error instanceof WirePusherError) {
+    if (error instanceof PinchoError) {
       return NextResponse.json(
         {
           error: 'Failed to send notification',
@@ -107,10 +107,10 @@ export async function POST(request: NextRequest) {
 
 /*
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { WirePusher, WirePusherError } from 'wirepusher';
+import { Pincho, PinchoError } from 'pincho';
 
-const notificationClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
+const notificationClient = new Pincho({
+  token: process.env.PINCHO_TOKEN!,
 });
 
 export default async function handler(
@@ -143,7 +143,7 @@ export default async function handler(
   } catch (error) {
     console.error('Failed to send notification:', error);
 
-    if (error instanceof WirePusherError) {
+    if (error instanceof PinchoError) {
       return res.status(500).json({
         error: 'Failed to send notification',
         message: error.message,
@@ -168,10 +168,10 @@ export default async function handler(
 /*
 'use server';
 
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 
-const notificationClient = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
+const notificationClient = new Pincho({
+  token: process.env.PINCHO_TOKEN!,
 });
 
 export async function sendNotification(formData: FormData) {

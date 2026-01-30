@@ -1,21 +1,21 @@
 /**
  * Encryption Example
  *
- * Demonstrates how to send encrypted notifications using the WirePusher Client Library.
+ * Demonstrates how to send encrypted notifications using the Pincho Client Library.
  * Only the message content is encrypted; title, type, and other metadata remain unencrypted.
  */
 
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 
 // Configuration
-const TOKEN = process.env.WIREPUSHER_TOKEN || 'abc12345';
-const ENCRYPTION_PASSWORD = process.env.WIREPUSHER_ENCRYPTION_PASSWORD || 'your_secure_password';
+const TOKEN = process.env.PINCHO_TOKEN || 'abc12345';
+const ENCRYPTION_PASSWORD = process.env.PINCHO_ENCRYPTION_PASSWORD || 'your_secure_password';
 
 async function main() {
   // Create client
-  const client = new WirePusher({ token: TOKEN });
+  const client = new Pincho({ token: TOKEN });
 
-  console.log('🔐 WirePusher Encryption Example\n');
+  console.log('🔐 Pincho Encryption Example\n');
 
   // Example 1: Basic encrypted notification
   console.log('Example 1: Basic encrypted notification');
@@ -65,11 +65,11 @@ async function main() {
 
   // Example 4: Reading password from environment variable (best practice)
   console.log('Example 4: Using environment variable for password (RECOMMENDED)');
-  const encryptionPassword = process.env.WIREPUSHER_ENCRYPTION_PASSWORD;
+  const encryptionPassword = process.env.PINCHO_ENCRYPTION_PASSWORD;
 
   if (!encryptionPassword) {
-    console.warn('⚠️  WIREPUSHER_ENCRYPTION_PASSWORD not set in environment');
-    console.warn('   Set it with: export WIREPUSHER_ENCRYPTION_PASSWORD="your_password"\n');
+    console.warn('⚠️  PINCHO_ENCRYPTION_PASSWORD not set in environment');
+    console.warn('   Set it with: export PINCHO_ENCRYPTION_PASSWORD="your_password"\n');
   } else {
     try {
       const response4 = await client.send({

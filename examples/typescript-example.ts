@@ -1,22 +1,22 @@
 /**
  * TypeScript Example
  *
- * This example demonstrates type-safe usage of the WirePusher Client Library.
+ * This example demonstrates type-safe usage of the Pincho Client Library.
  * Shows proper error handling with custom error types.
  */
 
 import {
-  WirePusher,
-  WirePusherAuthError,
-  WirePusherValidationError,
-  WirePusherError,
+  Pincho,
+  PinchoAuthError,
+  PinchoValidationError,
+  PinchoError,
   type NotificationOptions,
   type NotificationResponse,
-} from 'wirepusher';
+} from 'pincho';
 
 // Initialize the client with type safety
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN || 'abc12345',
   timeout: 30000, // Optional: custom timeout
 });
 
@@ -54,17 +54,17 @@ async function sendAdvancedNotification(): Promise<void> {
 
 // Example 3: Comprehensive error handling
 function handleError(error: unknown): void {
-  if (error instanceof WirePusherAuthError) {
+  if (error instanceof PinchoAuthError) {
     console.error('❌ Authentication failed:', error.message);
     console.error('   Please check your token');
     // Handle auth errors - maybe refresh credentials
-  } else if (error instanceof WirePusherValidationError) {
+  } else if (error instanceof PinchoValidationError) {
     console.error('❌ Validation error:', error.message);
     console.error('   Please check your notification parameters');
     // Handle validation errors - fix the input
-  } else if (error instanceof WirePusherError) {
+  } else if (error instanceof PinchoError) {
     console.error('❌ API error:', error.message);
-    console.error('   The WirePusher service may be unavailable');
+    console.error('   The Pincho service may be unavailable');
     // Handle general API errors - maybe retry
   } else if (error instanceof Error) {
     console.error('❌ Unexpected error:', error.message);
@@ -107,7 +107,7 @@ function createNotification(
 
 // Run examples
 async function main(): Promise<void> {
-  console.log('WirePusher TypeScript Example\n');
+  console.log('Pincho TypeScript Example\n');
 
   // Simple notification
   await sendSimpleNotification();

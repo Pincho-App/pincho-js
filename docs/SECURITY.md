@@ -11,7 +11,7 @@ We release patches for security vulnerabilities in the following versions:
 
 ## Reporting a Vulnerability
 
-The WirePusher team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
+The Pincho team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
 
 ### How to Report
 
@@ -19,7 +19,7 @@ The WirePusher team takes security bugs seriously. We appreciate your efforts to
 
 Instead, please report security vulnerabilities via email to:
 
-**support@wirepusher.dev**
+**support@pincho.dev**
 
 ### What to Include
 
@@ -53,7 +53,7 @@ After you submit a report:
 
 ### For Users
 
-When using the WirePusher JavaScript/TypeScript Client Library:
+When using the Pincho JavaScript/TypeScript Client Library:
 
 1. **Keep the SDK updated** to the latest version
 2. **Never commit credentials** to version control
@@ -67,15 +67,15 @@ When using the WirePusher JavaScript/TypeScript Client Library:
 
 ```typescript
 // Bad - Hardcoded credentials
-const client = new WirePusher({ token: 'abc12345' });
+const client = new Pincho({ token: 'abc12345' });
 
 // Good - Environment variables (Node.js)
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN!
 });
 
 // Good - Auto-load from environment
-const client = new WirePusher(); // reads WIREPUSHER_TOKEN
+const client = new Pincho(); // reads PINCHO_TOKEN
 ```
 
 ### Error Handling
@@ -137,10 +137,10 @@ app.post('/notify', async (req, res) => {
 
 ```typescript
 // Bad - No timeout
-const client = new WirePusher({ token: 'abc12345' });
+const client = new Pincho({ token: 'abc12345' });
 
 // Good - Configure timeout
-const client = new WirePusher({
+const client = new Pincho({
   token: 'abc12345',
   timeout: 10000 // 10 seconds
 });
@@ -157,7 +157,7 @@ const client = new WirePusher({
 
 ### Network Communication
 
-- All communication with WirePusher API is over HTTPS
+- All communication with Pincho API is over HTTPS
 - The SDK uses the native `fetch` API (Node.js 18+)
 - Certificate validation is handled by the Node.js runtime
 - No custom TLS configuration - uses system defaults
@@ -218,7 +218,7 @@ We thank the following individuals for responsibly disclosing security vulnerabi
 
 For security-related questions that aren't reporting vulnerabilities:
 
-- Email: support@wirepusher.dev
-- General questions: support@wirepusher.dev
+- Email: support@pincho.dev
+- General questions: support@pincho.dev
 
-Thank you for helping keep WirePusher and its users safe!
+Thank you for helping keep Pincho and its users safe!

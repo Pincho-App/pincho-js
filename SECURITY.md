@@ -11,7 +11,7 @@ We release patches for security vulnerabilities in the following versions:
 
 ## Reporting a Vulnerability
 
-The WirePusher team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
+The Pincho team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
 
 ### How to Report
 
@@ -19,7 +19,7 @@ The WirePusher team takes security bugs seriously. We appreciate your efforts to
 
 Instead, please report security vulnerabilities via email to:
 
-**support@wirepusher.dev**
+**support@pincho.dev**
 
 ### What to Include
 
@@ -53,7 +53,7 @@ After you submit a report:
 
 ### For Users
 
-When using the WirePusher JavaScript Client Library:
+When using the Pincho JavaScript Client Library:
 
 1. **Keep the SDK updated** to the latest version
 2. **Never commit credentials** to version control
@@ -67,15 +67,15 @@ When using the WirePusher JavaScript Client Library:
 
 ```typescript
 // ❌ Bad - Hardcoded credentials
-const client = new WirePusher({
+const client = new Pincho({
   token: 'abc12345',
   userId: 'user123'
 });
 
 // ✅ Good - Environment variables
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN!,
-  userId: process.env.WIREPUSHER_USER_ID!
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN!,
+  userId: process.env.PINCHO_USER_ID!
 });
 ```
 
@@ -94,7 +94,7 @@ try {
 try {
   await client.send(title, message);
 } catch (error) {
-  if (error instanceof WirePusherError) {
+  if (error instanceof PinchoError) {
     console.error('Notification failed:', error.message);
     // Handle without exposing credentials
   }
@@ -136,7 +136,7 @@ app.post('/notify', async (req, res) => {
 
 ### Network Communication
 
-- All communication with WirePusher API is over HTTPS
+- All communication with Pincho API is over HTTPS
 - The SDK uses native fetch which respects system-level TLS/SSL settings
 - Certificate validation is handled by the Node.js runtime
 
@@ -188,7 +188,7 @@ We thank the following individuals for responsibly disclosing security vulnerabi
 
 For security-related questions that aren't reporting vulnerabilities:
 
-- Email: support@wirepusher.dev
-- General questions: support@wirepusher.dev
+- Email: support@pincho.dev
+- General questions: support@pincho.dev
 
-Thank you for helping keep WirePusher and its users safe!
+Thank you for helping keep Pincho and its users safe!

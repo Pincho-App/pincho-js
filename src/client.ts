@@ -1,22 +1,22 @@
 import type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse, RateLimitInfo } from './types.js';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
+import { PinchoError, PinchoAuthError, PinchoValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
 import { normalizeTags } from './utils.js';
 
 /**
  * Library version for User-Agent header.
  */
-const VERSION = '1.0.0-alpha.7';
+const VERSION = '1.0.0-alpha.1';
 
 /**
- * WirePusher client for sending push notifications.
+ * Pincho client for sending push notifications.
  *
  * @example
  * ```typescript
- * import { WirePusher } from 'wirepusher';
+ * import { Pincho } from 'pincho';
  *
  * // Initialize client
- * const client = new WirePusher({ token: 'abc12345' });
+ * const client = new Pincho({ token: 'abc12345' });
  * await client.send('Deploy Complete', 'Version 1.2.3 deployed');
  *
  * // With all options including encryption
@@ -29,7 +29,7 @@ const VERSION = '1.0.0-alpha.7';
  * });
  * ```
  */
-export class WirePusher {
+export class Pincho {
   private readonly baseUrl: string;
   private readonly token: string;
   private readonly timeout: number;
@@ -48,10 +48,10 @@ export class WirePusher {
 
   constructor(config: ClientConfig = {}) {
     // Load from environment variables with fallbacks
-    const resolvedToken = config.token || process.env['WIREPUSHER_TOKEN'];
+    const resolvedToken = config.token || process.env['PINCHO_TOKEN'];
     if (!resolvedToken) {
       throw new Error(
-        'Token is required. Provide token in config or set WIREPUSHER_TOKEN environment variable.',
+        'Token is required. Provide token in config or set PINCHO_TOKEN environment variable.',
       );
     }
 
@@ -59,8 +59,8 @@ export class WirePusher {
     let resolvedTimeout: number;
     if (config.timeout !== undefined) {
       resolvedTimeout = config.timeout;
-    } else if (process.env['WIREPUSHER_TIMEOUT']) {
-      resolvedTimeout = parseInt(process.env['WIREPUSHER_TIMEOUT'], 10) * 1000; // Convert seconds to ms
+    } else if (process.env['PINCHO_TIMEOUT']) {
+      resolvedTimeout = parseInt(process.env['PINCHO_TIMEOUT'], 10) * 1000; // Convert seconds to ms
     } else {
       resolvedTimeout = 30000;
     }
@@ -69,8 +69,8 @@ export class WirePusher {
     let resolvedMaxRetries: number;
     if (config.maxRetries !== undefined) {
       resolvedMaxRetries = config.maxRetries;
-    } else if (process.env['WIREPUSHER_MAX_RETRIES']) {
-      resolvedMaxRetries = parseInt(process.env['WIREPUSHER_MAX_RETRIES'], 10);
+    } else if (process.env['PINCHO_MAX_RETRIES']) {
+      resolvedMaxRetries = parseInt(process.env['PINCHO_MAX_RETRIES'], 10);
     } else {
       resolvedMaxRetries = 3;
     }
@@ -78,7 +78,7 @@ export class WirePusher {
     this.token = resolvedToken;
     this.timeout = resolvedTimeout;
     this.maxRetries = resolvedMaxRetries;
-    this.baseUrl = config.baseUrl ?? 'https://api.wirepusher.dev';
+    this.baseUrl = config.baseUrl ?? 'https://api.pincho.app';
   }
 
   /**
@@ -88,7 +88,7 @@ export class WirePusher {
    *
    * @example
    * ```typescript
-   * const client = new WirePusher({ token: 'abc12345' });
+   * const client = new Pincho({ token: 'abc12345' });
    * await client.send('Test', 'Message');
    * const rateLimit = client.getRateLimitInfo();
    * if (rateLimit) {
@@ -137,10 +137,10 @@ export class WirePusher {
    */
   private calculateBackoff(attempt: number, isRateLimit = false): number {
     const baseDelay = isRateLimit
-      ? WirePusher.RATE_LIMIT_BACKOFF_MS
-      : WirePusher.INITIAL_BACKOFF_MS;
+      ? Pincho.RATE_LIMIT_BACKOFF_MS
+      : Pincho.INITIAL_BACKOFF_MS;
     const delay = baseDelay * Math.pow(2, attempt);
-    return Math.min(delay, WirePusher.MAX_BACKOFF_MS);
+    return Math.min(delay, Pincho.MAX_BACKOFF_MS);
   }
 
   /**
@@ -153,7 +153,7 @@ export class WirePusher {
   }
 
   /**
-   * Send a notification via WirePusher API.
+   * Send a notification via Pincho API.
    *
    * Supports two signatures:
    * 1. `send(title, message)` - Simple notification
@@ -162,9 +162,9 @@ export class WirePusher {
    * @param titleOrOptions - Notification title or options object
    * @param message - Notification message (only when using simple signature)
    * @returns Promise resolving to the API response
-   * @throws {WirePusherAuthError} Invalid token
-   * @throws {WirePusherValidationError} Invalid parameters
-   * @throws {WirePusherError} Network errors or other API errors
+   * @throws {PinchoAuthError} Invalid token
+   * @throws {PinchoValidationError} Invalid parameters
+   * @throws {PinchoError} Network errors or other API errors
    *
    * @example
    * ```typescript
@@ -242,16 +242,16 @@ export class WirePusher {
    *
    * @param requestFn - Function that executes the request
    * @returns Promise resolving to the response
-   * @throws {WirePusherError} When all retries are exhausted
+   * @throws {PinchoError} When all retries are exhausted
    */
   private async executeWithRetry<T>(requestFn: () => Promise<T>): Promise<T> {
-    let lastError: WirePusherError | undefined;
+    let lastError: PinchoError | undefined;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         return await requestFn();
       } catch (error) {
-        if (!(error instanceof WirePusherError)) {
+        if (!(error instanceof PinchoError)) {
           throw error;
         }
 
@@ -279,11 +279,11 @@ export class WirePusher {
     }
 
     // This should never be reached, but TypeScript needs it
-    throw lastError ?? new WirePusherError('Unknown error', ErrorCode.UNKNOWN, false);
+    throw lastError ?? new PinchoError('Unknown error', ErrorCode.UNKNOWN, false);
   }
 
   /**
-   * Execute an HTTP request to the WirePusher API.
+   * Execute an HTTP request to the Pincho API.
    *
    * @param endpoint - API endpoint (e.g., '/send', '/notifai')
    * @param body - Request body
@@ -300,7 +300,7 @@ export class WirePusher {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.token}`,
-          'User-Agent': `wirepusher-js/${VERSION}`,
+          'User-Agent': `pincho-js/${VERSION}`,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
@@ -322,23 +322,23 @@ export class WirePusher {
       // Parse successful response
       return await response.json();
     } catch (error) {
-      // Re-throw WirePusher errors as-is
-      if (error instanceof WirePusherError) {
+      // Re-throw Pincho errors as-is
+      if (error instanceof PinchoError) {
         throw error;
       }
 
       // Handle timeout errors
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new WirePusherError(`Request timeout after ${this.timeout}ms`, ErrorCode.TIMEOUT, true);
+        throw new PinchoError(`Request timeout after ${this.timeout}ms`, ErrorCode.TIMEOUT, true);
       }
 
       // Handle other network errors
       if (error instanceof Error) {
-        throw new WirePusherError(`Network error: ${error.message}`, ErrorCode.NETWORK_ERROR, true);
+        throw new PinchoError(`Network error: ${error.message}`, ErrorCode.NETWORK_ERROR, true);
       }
 
       // Fallback for unknown errors
-      throw new WirePusherError(`Unexpected error: ${String(error)}`, ErrorCode.UNKNOWN, false);
+      throw new PinchoError(`Unexpected error: ${String(error)}`, ErrorCode.UNKNOWN, false);
     }
   }
 
@@ -346,9 +346,9 @@ export class WirePusher {
    * Handle error responses from the API with graceful parsing.
    *
    * @param response - The fetch Response object
-   * @throws {WirePusherAuthError} For 401/403 errors
-   * @throws {WirePusherValidationError} For 400/404 errors
-   * @throws {WirePusherError} For other errors
+   * @throws {PinchoAuthError} For 401/403 errors
+   * @throws {PinchoValidationError} For 400/404 errors
+   * @throws {PinchoError} For other errors
    */
   private async handleErrorResponse(response: Response): Promise<never> {
     // Try to parse error message from response
@@ -390,32 +390,32 @@ export class WirePusher {
     // Throw appropriate error based on status code
     switch (response.status) {
       case 401:
-        throw new WirePusherAuthError(
+        throw new PinchoAuthError(
           'Invalid token. Please check your credentials.',
           ErrorCode.AUTH_INVALID,
           false,
         );
       case 403:
-        throw new WirePusherAuthError(
+        throw new PinchoAuthError(
           "Forbidden: Your account may be disabled or you don't have permission.",
           ErrorCode.AUTH_FORBIDDEN,
           false,
         );
       case 400:
-        throw new WirePusherValidationError(
+        throw new PinchoValidationError(
           `Invalid parameters: ${errorMessage}`,
           ErrorCode.VALIDATION_ERROR,
           false,
         );
       case 404:
-        throw new WirePusherValidationError(
+        throw new PinchoValidationError(
           `Resource not found: ${errorMessage}`,
           ErrorCode.NOT_FOUND,
           false,
         );
       case 429: {
         // Rate limit errors are retryable
-        const rateLimitError = new WirePusherError(
+        const rateLimitError = new PinchoError(
           `Rate limit exceeded: ${errorMessage}`,
           ErrorCode.RATE_LIMIT,
           true,
@@ -435,13 +435,13 @@ export class WirePusher {
       case 503:
       case 504:
         // Server errors are retryable
-        throw new WirePusherError(
+        throw new PinchoError(
           `API error (${response.status}): ${errorMessage}`,
           ErrorCode.SERVER_ERROR,
           true,
         );
       default:
-        throw new WirePusherError(
+        throw new PinchoError(
           `API error (${response.status}): ${errorMessage}`,
           ErrorCode.UNKNOWN,
           false,
@@ -455,13 +455,13 @@ export class WirePusher {
    * @param text - Free-form text to convert (5-2500 characters)
    * @param type - Optional notification type to override AI-generated type
    * @returns Promise resolving to the NotifAI API response
-   * @throws {WirePusherAuthError} Invalid token
-   * @throws {WirePusherValidationError} Invalid parameters
-   * @throws {WirePusherError} Other API errors
+   * @throws {PinchoAuthError} Invalid token
+   * @throws {PinchoValidationError} Invalid parameters
+   * @throws {PinchoError} Other API errors
    *
    * @example
    * ```typescript
-   * const client = new WirePusher({ token: 'abc12345' });
+   * const client = new Pincho({ token: 'abc12345' });
    * const response = await client.notifai('deployment finished, v2.1.3 is live');
    * console.log(response.summary?.title); // AI-generated title
    * ```

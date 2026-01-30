@@ -1,12 +1,12 @@
 /**
- * WirePusher Client Library for JavaScript and TypeScript.
+ * Pincho Client Library for JavaScript and TypeScript.
  *
- * Official SDK for WirePusher push notifications API.
+ * Official SDK for Pincho push notifications API.
  *
  * @packageDocumentation
  */
 
-export { WirePusher } from './client.js';
-export { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from './errors.js';
+export { Pincho } from './client.js';
+export { PinchoError, PinchoAuthError, PinchoValidationError, ErrorCode } from './errors.js';
 export type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse, RateLimitInfo } from './types.js';
 export { normalizeTags } from './utils.js';

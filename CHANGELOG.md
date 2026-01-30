@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the WirePusher JavaScript Client Library will be documented in this file.
+All notable changes to the Pincho JavaScript Client Library will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release of WirePusher JavaScript/TypeScript Client Library
+- Initial release of Pincho JavaScript/TypeScript Client Library
 - Full TypeScript support with comprehensive type definitions
 - Zero-dependency implementation using native fetch API (Node.js 18+)
 - Dual package support (CommonJS and ES Modules)
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Usage examples for CommonJS, ESM, TypeScript, Express.js, and Next.js
 
 ### Features
-- `WirePusher` class for sending notifications
+- `Pincho` class for sending notifications
 - Simple API: `send(title, message)` for basic notifications
 - Advanced API: `send(options)` for notifications with all parameters
 - Support for notification types, tags, images, and action URLs
@@ -29,9 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom base URL support for testing or alternative gateways
 
 ### Error Types
-- `WirePusherError` - Base error class
-- `WirePusherAuthError` - Authentication failures (401, 403)
-- `WirePusherValidationError` - Invalid parameters (400, 404)
+- `PinchoError` - Base error class
+- `PinchoAuthError` - Authentication failures (401, 403)
+- `PinchoValidationError` - Invalid parameters (400, 404)
 
 ### Documentation
 - Comprehensive README with quickstart guide
@@ -97,7 +97,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ## Links
 
-- [npm Package](https://www.npmjs.com/package/wirepusher)
-- [GitLab Repository](https://gitlab.com/wirepusher/wirepusher-js)
-- [Issue Tracker](https://gitlab.com/wirepusher/wirepusher-js/-/issues)
-- [WirePusher API Documentation](https://wirepusher.com/api)
+- [npm Package](https://www.npmjs.com/package/pincho)
+- [GitLab Repository](https://gitlab.com/pincho/pincho-js)
+- [Issue Tracker](https://gitlab.com/pincho/pincho-js/-/issues)
+- [Pincho API Documentation](https://pincho.com/api)

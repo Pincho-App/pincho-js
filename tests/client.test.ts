@@ -1,110 +1,110 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WirePusher } from '../src/client.js';
-import { WirePusherError, WirePusherAuthError, WirePusherValidationError, ErrorCode } from '../src/errors.js';
+import { Pincho } from '../src/client.js';
+import { PinchoError, PinchoAuthError, PinchoValidationError, ErrorCode } from '../src/errors.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe('WirePusher', () => {
+describe('Pincho', () => {
   beforeEach(() => {
     mockFetch.mockClear();
   });
 
   describe('constructor', () => {
     it('should create instance with token', () => {
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
-      expect(client).toBeInstanceOf(WirePusher);
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
+      expect(client).toBeInstanceOf(Pincho);
     });
 
     it('should use custom timeout if provided', () => {
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         timeout: 60000,
       });
 
-      expect(client).toBeInstanceOf(WirePusher);
+      expect(client).toBeInstanceOf(Pincho);
     });
 
     it('should use custom base URL if provided', () => {
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         baseUrl: 'https://custom.example.com',
       });
 
-      expect(client).toBeInstanceOf(WirePusher);
+      expect(client).toBeInstanceOf(Pincho);
     });
 
     it('should throw error when token not provided and no env var', () => {
-      const originalToken = process.env.WIREPUSHER_TOKEN;
-      delete process.env.WIREPUSHER_TOKEN;
+      const originalToken = process.env.PINCHO_TOKEN;
+      delete process.env.PINCHO_TOKEN;
 
-      expect(() => new WirePusher({})).toThrow('Token is required');
+      expect(() => new Pincho({})).toThrow('Token is required');
 
       // Restore
-      if (originalToken) process.env.WIREPUSHER_TOKEN = originalToken;
+      if (originalToken) process.env.PINCHO_TOKEN = originalToken;
     });
 
-    it('should read token from WIREPUSHER_TOKEN env var', () => {
-      const originalToken = process.env.WIREPUSHER_TOKEN;
-      process.env.WIREPUSHER_TOKEN = 'env_token_123';
+    it('should read token from PINCHO_TOKEN env var', () => {
+      const originalToken = process.env.PINCHO_TOKEN;
+      process.env.PINCHO_TOKEN = 'env_token_123';
 
-      const client = new WirePusher({ maxRetries: 0 });
-      expect(client).toBeInstanceOf(WirePusher);
+      const client = new Pincho({ maxRetries: 0 });
+      expect(client).toBeInstanceOf(Pincho);
 
       // Restore
       if (originalToken) {
-        process.env.WIREPUSHER_TOKEN = originalToken;
+        process.env.PINCHO_TOKEN = originalToken;
       } else {
-        delete process.env.WIREPUSHER_TOKEN;
+        delete process.env.PINCHO_TOKEN;
       }
     });
 
-    it('should read timeout from WIREPUSHER_TIMEOUT env var (seconds to ms)', () => {
-      const originalTimeout = process.env.WIREPUSHER_TIMEOUT;
-      process.env.WIREPUSHER_TIMEOUT = '60'; // 60 seconds
+    it('should read timeout from PINCHO_TIMEOUT env var (seconds to ms)', () => {
+      const originalTimeout = process.env.PINCHO_TIMEOUT;
+      process.env.PINCHO_TIMEOUT = '60'; // 60 seconds
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
       // We can't directly check private property, but we can test behavior
-      expect(client).toBeInstanceOf(WirePusher);
+      expect(client).toBeInstanceOf(Pincho);
 
       // Restore
       if (originalTimeout) {
-        process.env.WIREPUSHER_TIMEOUT = originalTimeout;
+        process.env.PINCHO_TIMEOUT = originalTimeout;
       } else {
-        delete process.env.WIREPUSHER_TIMEOUT;
+        delete process.env.PINCHO_TIMEOUT;
       }
     });
 
-    it('should read maxRetries from WIREPUSHER_MAX_RETRIES env var', () => {
-      const originalRetries = process.env.WIREPUSHER_MAX_RETRIES;
-      process.env.WIREPUSHER_MAX_RETRIES = '5';
+    it('should read maxRetries from PINCHO_MAX_RETRIES env var', () => {
+      const originalRetries = process.env.PINCHO_MAX_RETRIES;
+      process.env.PINCHO_MAX_RETRIES = '5';
 
-      const client = new WirePusher({ token: 'abc12345' });
-      expect(client).toBeInstanceOf(WirePusher);
+      const client = new Pincho({ token: 'abc12345' });
+      expect(client).toBeInstanceOf(Pincho);
 
       // Restore
       if (originalRetries) {
-        process.env.WIREPUSHER_MAX_RETRIES = originalRetries;
+        process.env.PINCHO_MAX_RETRIES = originalRetries;
       } else {
-        delete process.env.WIREPUSHER_MAX_RETRIES;
+        delete process.env.PINCHO_MAX_RETRIES;
       }
     });
 
     it('should prefer explicit config over env vars', () => {
-      const originalToken = process.env.WIREPUSHER_TOKEN;
-      process.env.WIREPUSHER_TOKEN = 'env_token';
+      const originalToken = process.env.PINCHO_TOKEN;
+      process.env.PINCHO_TOKEN = 'env_token';
 
-      const client = new WirePusher({ token: 'explicit_token', maxRetries: 0 });
-      expect(client).toBeInstanceOf(WirePusher);
+      const client = new Pincho({ token: 'explicit_token', maxRetries: 0 });
+      expect(client).toBeInstanceOf(Pincho);
 
       // Restore
       if (originalToken) {
-        process.env.WIREPUSHER_TOKEN = originalToken;
+        process.env.PINCHO_TOKEN = originalToken;
       } else {
-        delete process.env.WIREPUSHER_TOKEN;
+        delete process.env.PINCHO_TOKEN;
       }
     });
   });
@@ -117,7 +117,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.send('Test Title', 'Test message');
 
@@ -137,7 +137,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Notification sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.send({
         title: 'Test Title',
@@ -175,7 +175,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'invalid_token',
       });
@@ -184,10 +184,10 @@ describe('WirePusher', () => {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherAuthError);
-        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_INVALID);
-        expect((error as WirePusherAuthError).isRetryable).toBe(false);
-        expect((error as WirePusherAuthError).message).toContain('Invalid token');
+        expect(error).toBeInstanceOf(PinchoAuthError);
+        expect((error as PinchoAuthError).code).toBe(ErrorCode.AUTH_INVALID);
+        expect((error as PinchoAuthError).isRetryable).toBe(false);
+        expect((error as PinchoAuthError).message).toContain('Invalid token');
       }
     });
 
@@ -207,16 +207,16 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherAuthError);
-        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_FORBIDDEN);
-        expect((error as WirePusherAuthError).isRetryable).toBe(false);
-        expect((error as WirePusherAuthError).message).toContain('Forbidden');
+        expect(error).toBeInstanceOf(PinchoAuthError);
+        expect((error as PinchoAuthError).code).toBe(ErrorCode.AUTH_FORBIDDEN);
+        expect((error as PinchoAuthError).isRetryable).toBe(false);
+        expect((error as PinchoAuthError).message).toContain('Forbidden');
       }
     });
 
@@ -237,9 +237,9 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      await expect(client.send('', 'Message')).rejects.toThrow(WirePusherValidationError);
+      await expect(client.send('', 'Message')).rejects.toThrow(PinchoValidationError);
       await expect(client.send('', 'Message')).rejects.toThrow(/Invalid parameters/);
       await expect(client.send('', 'Message')).rejects.toThrow(/parameter: title/);
       await expect(client.send('', 'Message')).rejects.toThrow(/invalid_parameter/);
@@ -262,12 +262,12 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
       });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherValidationError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoValidationError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Resource not found/);
     });
 
@@ -287,9 +287,9 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/API error \(500\)/);
     });
 
@@ -309,16 +309,16 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
-        expect((error as WirePusherError).isRetryable).toBe(true);
-        expect((error as WirePusherError).message).toContain('Rate limit exceeded');
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as PinchoError).isRetryable).toBe(true);
+        expect((error as PinchoError).message).toContain('Rate limit exceeded');
       }
     });
 
@@ -338,16 +338,16 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.UNKNOWN);
-        expect((error as WirePusherError).isRetryable).toBe(false);
-        expect((error as WirePusherError).message).toContain('API error (418)');
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.UNKNOWN);
+        expect((error as PinchoError).isRetryable).toBe(false);
+        expect((error as PinchoError).message).toContain('API error (418)');
       }
     });
 
@@ -360,7 +360,7 @@ describe('WirePusher', () => {
         text: async () => 'Internal server error',
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Internal server error/);
     });
@@ -377,9 +377,9 @@ describe('WirePusher', () => {
         text: async () => 'Malformed response',
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoError);
     });
 
     it('should parse nested error format with code and param', async () => {
@@ -399,14 +399,14 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherValidationError);
-        const err = error as WirePusherValidationError;
+        expect(error).toBeInstanceOf(PinchoValidationError);
+        const err = error as PinchoValidationError;
         // Should include parameter context
         expect(err.message).toContain('parameter: title');
         // Should include error code
@@ -419,9 +419,9 @@ describe('WirePusher', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Network error/);
     });
 
@@ -430,22 +430,22 @@ describe('WirePusher', () => {
       abortError.name = 'AbortError';
       mockFetch.mockRejectedValue(abortError);
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
       });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Request timeout/);
     });
 
     it('should handle non-Error throws gracefully', async () => {
       mockFetch.mockRejectedValue('string error');
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      await expect(client.send('Test', 'Message')).rejects.toThrow(WirePusherError);
+      await expect(client.send('Test', 'Message')).rejects.toThrow(PinchoError);
       await expect(client.send('Test', 'Message')).rejects.toThrow(/Unexpected error/);
     });
 
@@ -456,7 +456,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -485,17 +485,17 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
       const call = mockFetch.mock.calls[0]!;
-      expect(call[0]).toBe('https://api.wirepusher.dev/send');
+      expect(call[0]).toBe('https://api.pincho.app/send');
       expect(call[1]?.method).toBe('POST');
       expect(call[1]?.headers).toEqual({
         'Content-Type': 'application/json',
         Authorization: 'Bearer abc12345',
-        'User-Agent': 'wirepusher-js/1.0.0-alpha.7',
+        'User-Agent': 'pincho-js/1.0.0-alpha.1',
       });
     });
 
@@ -506,12 +506,12 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
       const call = mockFetch.mock.calls[0]!;
-      expect(call[1]?.headers).toHaveProperty('User-Agent', 'wirepusher-js/1.0.0-alpha.7');
+      expect(call[1]?.headers).toHaveProperty('User-Agent', 'pincho-js/1.0.0-alpha.1');
     });
 
     it('should use custom base URL when provided', async () => {
@@ -521,7 +521,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         baseUrl: 'https://custom.example.com',
@@ -540,7 +540,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Secure Message',
@@ -575,7 +575,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Regular Message',
@@ -600,7 +600,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -617,7 +617,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -639,7 +639,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send({
         title: 'Test',
@@ -670,30 +670,30 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.SERVER_ERROR);
-        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.SERVER_ERROR);
+        expect((error as PinchoError).isRetryable).toBe(true);
       }
     });
 
     it('should handle network errors as retryable', async () => {
       mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.NETWORK_ERROR);
-        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.NETWORK_ERROR);
+        expect((error as PinchoError).isRetryable).toBe(true);
       }
     });
 
@@ -702,7 +702,7 @@ describe('WirePusher', () => {
       abortError.name = 'AbortError';
       mockFetch.mockRejectedValue(abortError);
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
@@ -712,9 +712,9 @@ describe('WirePusher', () => {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.TIMEOUT);
-        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.TIMEOUT);
+        expect((error as PinchoError).isRetryable).toBe(true);
       }
     });
 
@@ -737,7 +737,7 @@ describe('WirePusher', () => {
           json: async () => ({ status: 'success', message: 'Notification sent' }),
         });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 1 });
 
       // Mock timers to avoid actual delays
       vi.useFakeTimers();
@@ -774,7 +774,7 @@ describe('WirePusher', () => {
           json: async () => ({ status: 'success', message: 'Sent' }),
         });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 1 });
 
       vi.useFakeTimers();
 
@@ -803,7 +803,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       // Initially, no rate limit info
       expect(client.getRateLimitInfo()).toBeNull();
@@ -825,7 +825,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -843,7 +843,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -862,7 +862,7 @@ describe('WirePusher', () => {
         json: async () => ({ status: 'success', message: 'Sent' }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.send('Test', 'Message');
 
@@ -891,7 +891,7 @@ describe('WirePusher', () => {
           json: async () => ({ status: 'success', message: 'Sent' }),
         });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 1 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 1 });
 
       vi.useFakeTimers();
 
@@ -923,15 +923,15 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
-        expect((error as WirePusherError).retryAfterSeconds).toBe(30);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as PinchoError).retryAfterSeconds).toBe(30);
       }
     });
 
@@ -949,15 +949,15 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
-        expect((error as WirePusherError).retryAfterSeconds).toBeUndefined();
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as PinchoError).retryAfterSeconds).toBeUndefined();
       }
     });
 
@@ -976,15 +976,15 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.send('Test', 'Message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.RATE_LIMIT);
-        expect((error as WirePusherError).retryAfterSeconds).toBeUndefined();
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.RATE_LIMIT);
+        expect((error as PinchoError).retryAfterSeconds).toBeUndefined();
       }
     });
   });
@@ -1005,7 +1005,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       const response = await client.notifai('deployment finished successfully, v2.1.3 is live on prod');
 
@@ -1015,7 +1015,7 @@ describe('WirePusher', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
 
       const call = mockFetch.mock.calls[0]!;
-      expect(call[0]).toBe('https://api.wirepusher.dev/notifai');
+      expect(call[0]).toBe('https://api.pincho.app/notifai');
       expect(call[1]?.headers).toHaveProperty('Authorization', 'Bearer abc12345');
     });
 
@@ -1029,7 +1029,7 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       await client.notifai('test notification', 'alert');
 
@@ -1055,14 +1055,14 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'invalid' });
+      const client = new Pincho({ token: 'invalid' });
 
       try {
         await client.notifai('test');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherAuthError);
-        expect((error as WirePusherAuthError).code).toBe(ErrorCode.AUTH_INVALID);
+        expect(error).toBeInstanceOf(PinchoAuthError);
+        expect((error as PinchoAuthError).code).toBe(ErrorCode.AUTH_INVALID);
       }
     });
 
@@ -1082,14 +1082,14 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('hi');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherValidationError);
-        expect((error as WirePusherValidationError).message).toContain('Text must be at least 5 characters');
+        expect(error).toBeInstanceOf(PinchoValidationError);
+        expect((error as PinchoValidationError).message).toContain('Text must be at least 5 characters');
       }
     });
 
@@ -1108,30 +1108,30 @@ describe('WirePusher', () => {
         }),
       });
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('test message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.SERVER_ERROR);
-        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.SERVER_ERROR);
+        expect((error as PinchoError).isRetryable).toBe(true);
       }
     });
 
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const client = new WirePusher({ token: 'abc12345', maxRetries: 0 });
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
       try {
         await client.notifai('test message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.NETWORK_ERROR);
-        expect((error as WirePusherError).message).toContain('Network error');
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.NETWORK_ERROR);
+        expect((error as PinchoError).message).toContain('Network error');
       }
     });
 
@@ -1140,7 +1140,7 @@ describe('WirePusher', () => {
       abortError.name = 'AbortError';
       mockFetch.mockRejectedValue(abortError);
 
-      const client = new WirePusher({
+      const client = new Pincho({
         maxRetries: 0,
         token: 'abc12345',
         timeout: 1000,
@@ -1150,9 +1150,9 @@ describe('WirePusher', () => {
         await client.notifai('test message');
         expect.fail('Should have thrown an error');
       } catch (error) {
-        expect(error).toBeInstanceOf(WirePusherError);
-        expect((error as WirePusherError).code).toBe(ErrorCode.TIMEOUT);
-        expect((error as WirePusherError).isRetryable).toBe(true);
+        expect(error).toBeInstanceOf(PinchoError);
+        expect((error as PinchoError).code).toBe(ErrorCode.TIMEOUT);
+        expect((error as PinchoError).isRetryable).toBe(true);
       }
     });
   });

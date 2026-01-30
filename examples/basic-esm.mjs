@@ -1,15 +1,15 @@
 /**
  * Basic ES Modules Example
  *
- * This example shows how to use WirePusher SDK with ES Modules.
+ * This example shows how to use Pincho SDK with ES Modules.
  * Suitable for modern Node.js applications (Node 18+).
  */
 
-import { WirePusher } from 'wirepusher';
+import { Pincho } from 'pincho';
 
 // Initialize the client
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN || 'abc12345',
 });
 
 // Example 1: Simple notification
@@ -40,7 +40,7 @@ async function sendAdvancedNotification() {
 }
 
 // Run examples
-console.log('WirePusher ES Modules Example\n');
+console.log('Pincho ES Modules Example\n');
 
 await sendSimpleNotification();
 console.log('---');

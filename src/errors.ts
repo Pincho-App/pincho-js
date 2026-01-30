@@ -1,5 +1,5 @@
 /**
- * Error codes for WirePusher API errors.
+ * Error codes for Pincho API errors.
  */
 export enum ErrorCode {
   /** Generic/unknown error */
@@ -23,9 +23,9 @@ export enum ErrorCode {
 }
 
 /**
- * Base error class for all WirePusher Client Library errors.
+ * Base error class for all Pincho Client Library errors.
  */
-export class WirePusherError extends Error {
+export class PinchoError extends Error {
   /**
    * Machine-readable error code.
    */
@@ -44,13 +44,13 @@ export class WirePusherError extends Error {
 
   constructor(message: string, code: ErrorCode = ErrorCode.UNKNOWN, isRetryable = false) {
     super(message);
-    this.name = 'WirePusherError';
+    this.name = 'PinchoError';
     this.code = code;
     this.isRetryable = isRetryable;
     // Maintains proper stack trace for where the error was thrown
     Error.captureStackTrace(this, this.constructor);
     // Set the prototype explicitly for proper instanceof checks
-    Object.setPrototypeOf(this, WirePusherError.prototype);
+    Object.setPrototypeOf(this, PinchoError.prototype);
   }
 }
 
@@ -61,11 +61,11 @@ export class WirePusherError extends Error {
  * - The API token is invalid or expired
  * - The account is disabled
  */
-export class WirePusherAuthError extends WirePusherError {
+export class PinchoAuthError extends PinchoError {
   constructor(message: string, code: ErrorCode = ErrorCode.AUTH_INVALID, isRetryable = false) {
     super(message, code, isRetryable);
-    this.name = 'WirePusherAuthError';
-    Object.setPrototypeOf(this, WirePusherAuthError.prototype);
+    this.name = 'PinchoAuthError';
+    Object.setPrototypeOf(this, PinchoAuthError.prototype);
   }
 }
 
@@ -77,10 +77,10 @@ export class WirePusherAuthError extends WirePusherError {
  * - Parameters have invalid values
  * - The request format is incorrect
  */
-export class WirePusherValidationError extends WirePusherError {
+export class PinchoValidationError extends PinchoError {
   constructor(message: string, code: ErrorCode = ErrorCode.VALIDATION_ERROR, isRetryable = false) {
     super(message, code, isRetryable);
-    this.name = 'WirePusherValidationError';
-    Object.setPrototypeOf(this, WirePusherValidationError.prototype);
+    this.name = 'PinchoValidationError';
+    Object.setPrototypeOf(this, PinchoValidationError.prototype);
   }
 }

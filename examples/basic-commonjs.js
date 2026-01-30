@@ -1,15 +1,15 @@
 /**
  * Basic CommonJS Example
  *
- * This example shows how to use WirePusher Client Library in a CommonJS environment.
+ * This example shows how to use Pincho Client Library in a CommonJS environment.
  * Suitable for traditional Node.js applications.
  */
 
-const { WirePusher } = require('wirepusher');
+const { Pincho } = require('pincho');
 
 // Initialize the client
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN || 'abc12345',
 });
 
 // Example 1: Simple notification
@@ -41,7 +41,7 @@ async function sendAdvancedNotification() {
 
 // Run examples
 async function main() {
-  console.log('WirePusher CommonJS Example\n');
+  console.log('Pincho CommonJS Example\n');
 
   await sendSimpleNotification();
   console.log('---');

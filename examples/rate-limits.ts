@@ -1,19 +1,19 @@
 /**
  * Rate Limits Example
  *
- * Demonstrates how to monitor and manage rate limiting when using the WirePusher client.
+ * Demonstrates how to monitor and manage rate limiting when using the Pincho client.
  * Shows proactive rate limit checking and handling.
  */
 
-import { WirePusher, type RateLimitInfo } from 'wirepusher';
+import { Pincho, type RateLimitInfo } from 'pincho';
 
 // Initialize client
-const client = new WirePusher({
-  token: process.env.WIREPUSHER_TOKEN || 'abc12345',
+const client = new Pincho({
+  token: process.env.PINCHO_TOKEN || 'abc12345',
 });
 
 async function main() {
-  console.log('WirePusher Rate Limits Example\n');
+  console.log('Pincho Rate Limits Example\n');
 
   // Example 1: Basic rate limit monitoring
   console.log('Example 1: Basic Rate Limit Monitoring');
@@ -101,7 +101,7 @@ function formatTimeUntilReset(resetTime: Date): string {
  * Send notification with proactive rate limit checking
  */
 async function sendWithRateLimitCheck(
-  client: WirePusher,
+  client: Pincho,
   title: string,
   message: string
 ): Promise<void> {
@@ -138,7 +138,7 @@ async function sendWithRateLimitCheck(
  * Send batch of notifications with rate limit awareness
  */
 async function sendBatchWithRateLimitAwareness(
-  client: WirePusher,
+  client: Pincho,
   notifications: Array<{ title: string; message: string }>
 ): Promise<void> {
   let sent = 0;
@@ -177,7 +177,7 @@ async function sendBatchWithRateLimitAwareness(
 /**
  * Monitor rate limit consumption over multiple requests
  */
-async function monitorRateLimitConsumption(client: WirePusher): Promise<void> {
+async function monitorRateLimitConsumption(client: Pincho): Promise<void> {
   const initialInfo = client.getRateLimitInfo();
   const startRemaining = initialInfo?.remaining ?? 0;
 
@@ -205,7 +205,7 @@ async function monitorRateLimitConsumption(client: WirePusher): Promise<void> {
 /**
  * Display comprehensive rate limit status
  */
-function displayRateLimitStatus(client: WirePusher): void {
+function displayRateLimitStatus(client: Pincho): void {
   const info = client.getRateLimitInfo();
 
   if (!info) {
