@@ -6,12 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  Pincho,
-  PinchoAuthError,
-  PinchoValidationError,
-  PinchoError,
-} from 'pincho';
+import { Pincho, PinchoAuthError, PinchoValidationError, PinchoError } from 'pincho';
 
 // Initialize Pincho client (singleton pattern)
 // This client instance is reused across requests
@@ -39,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (!title || !message) {
       return NextResponse.json(
         { error: 'Missing required fields: title and message' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -64,7 +59,7 @@ export async function POST(request: NextRequest) {
           error: 'Authentication failed',
           message: 'Invalid Pincho credentials',
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -74,7 +69,7 @@ export async function POST(request: NextRequest) {
           error: 'Validation error',
           message: error.message,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -84,7 +79,7 @@ export async function POST(request: NextRequest) {
           error: 'Failed to send notification',
           message: error.message,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -93,7 +88,7 @@ export async function POST(request: NextRequest) {
         error: 'Internal server error',
         message: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

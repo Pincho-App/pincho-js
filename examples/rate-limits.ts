@@ -103,7 +103,7 @@ function formatTimeUntilReset(resetTime: Date): string {
 async function sendWithRateLimitCheck(
   client: Pincho,
   title: string,
-  message: string
+  message: string,
 ): Promise<void> {
   const info = client.getRateLimitInfo();
 
@@ -139,7 +139,7 @@ async function sendWithRateLimitCheck(
  */
 async function sendBatchWithRateLimitAwareness(
   client: Pincho,
-  notifications: Array<{ title: string; message: string }>
+  notifications: Array<{ title: string; message: string }>,
 ): Promise<void> {
   let sent = 0;
   let skipped = 0;

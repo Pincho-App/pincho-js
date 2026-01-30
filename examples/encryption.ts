@@ -21,9 +21,9 @@ async function main() {
   console.log('Example 1: Basic encrypted notification');
   try {
     const response1 = await client.send({
-      title: 'Secure Message',              // Not encrypted (visible for filtering/display)
+      title: 'Secure Message', // Not encrypted (visible for filtering/display)
       message: 'This is sensitive information', // Encrypted
-      type: 'secure',                        // Not encrypted (needed for password lookup)
+      type: 'secure', // Not encrypted (needed for password lookup)
       encryptionPassword: ENCRYPTION_PASSWORD,
     });
     console.log(`✅ Sent: ${response1.status}\n`);
@@ -53,7 +53,7 @@ async function main() {
       title: 'Confidential Report',
       message: 'Q4 revenue increased by 25% - see attached report for details',
       type: 'finance',
-      imageURL: 'https://example.com/chart.png',   // Not encrypted
+      imageURL: 'https://example.com/chart.png', // Not encrypted
       actionURL: 'https://example.com/reports/q4', // Not encrypted
       tags: ['finance', 'quarterly'],
       encryptionPassword: ENCRYPTION_PASSWORD,

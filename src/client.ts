@@ -1,4 +1,10 @@
-import type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse, RateLimitInfo } from './types.js';
+import type {
+  ClientConfig,
+  NotificationOptions,
+  NotificationResponse,
+  NotifAIResponse,
+  RateLimitInfo,
+} from './types.js';
 import { PinchoError, PinchoAuthError, PinchoValidationError, ErrorCode } from './errors.js';
 import { encryptMessage, generateIV } from './crypto.js';
 import { normalizeTags } from './utils.js';
@@ -136,9 +142,7 @@ export class Pincho {
    * @returns Delay in milliseconds
    */
   private calculateBackoff(attempt: number, isRateLimit = false): number {
-    const baseDelay = isRateLimit
-      ? Pincho.RATE_LIMIT_BACKOFF_MS
-      : Pincho.INITIAL_BACKOFF_MS;
+    const baseDelay = isRateLimit ? Pincho.RATE_LIMIT_BACKOFF_MS : Pincho.INITIAL_BACKOFF_MS;
     const delay = baseDelay * Math.pow(2, attempt);
     return Math.min(delay, Pincho.MAX_BACKOFF_MS);
   }
@@ -234,7 +238,9 @@ export class Pincho {
     if (ivHex !== undefined) body.iv = ivHex;
 
     // Execute with retry logic
-    return this.executeWithRetry(() => this.sendRequest('/send', body)) as Promise<NotificationResponse>;
+    return this.executeWithRetry(() =>
+      this.sendRequest('/send', body),
+    ) as Promise<NotificationResponse>;
   }
 
   /**
@@ -476,6 +482,8 @@ export class Pincho {
     if (type !== undefined) body.type = type;
 
     // Execute with retry logic
-    return this.executeWithRetry(() => this.sendRequest('/notifai', body)) as Promise<NotifAIResponse>;
+    return this.executeWithRetry(() =>
+      this.sendRequest('/notifai', body),
+    ) as Promise<NotifAIResponse>;
   }
 }

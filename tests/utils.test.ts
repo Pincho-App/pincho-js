@@ -58,7 +58,14 @@ describe('normalizeTags', () => {
       '  production  ',
       'prod#123',
     ]);
-    expect(result).toEqual(['production', 'alert', 'test-tag', 'test_tag_2', 'invalidtag', 'prod123']);
+    expect(result).toEqual([
+      'production',
+      'alert',
+      'test-tag',
+      'test_tag_2',
+      'invalidtag',
+      'prod123',
+    ]);
   });
 
   it('should preserve order of first occurrence', () => {

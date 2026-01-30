@@ -8,5 +8,11 @@
 
 export { Pincho } from './client.js';
 export { PinchoError, PinchoAuthError, PinchoValidationError, ErrorCode } from './errors.js';
-export type { ClientConfig, NotificationOptions, NotificationResponse, NotifAIResponse, RateLimitInfo } from './types.js';
+export type {
+  ClientConfig,
+  NotificationOptions,
+  NotificationResponse,
+  NotifAIResponse,
+  RateLimitInfo,
+} from './types.js';
 export { normalizeTags } from './utils.js';

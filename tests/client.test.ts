@@ -1007,7 +1007,9 @@ describe('Pincho', () => {
 
       const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
 
-      const response = await client.notifai('deployment finished successfully, v2.1.3 is live on prod');
+      const response = await client.notifai(
+        'deployment finished successfully, v2.1.3 is live on prod',
+      );
 
       expect(response.status).toBe('success');
       expect(response.summary?.title).toBe('Deploy Complete - v2.1.3');
@@ -1089,7 +1091,9 @@ describe('Pincho', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(PinchoValidationError);
-        expect((error as PinchoValidationError).message).toContain('Text must be at least 5 characters');
+        expect((error as PinchoValidationError).message).toContain(
+          'Text must be at least 5 characters',
+        );
       }
     });
 

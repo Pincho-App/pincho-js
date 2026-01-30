@@ -44,7 +44,7 @@ app.post(
 
     const response = await notificationClient.send(title, message);
     res.json({ success: true, response });
-  })
+  }),
 );
 
 // Send an advanced notification
@@ -69,7 +69,7 @@ app.post(
     });
 
     res.json({ success: true, response });
-  })
+  }),
 );
 
 // Deploy notification endpoint
@@ -93,14 +93,13 @@ app.post(
       message,
       type: 'deployment',
       tags: [environment, status, version],
-      imageURL: status === 'success'
-        ? 'https://example.com/success.png'
-        : 'https://example.com/error.png',
+      imageURL:
+        status === 'success' ? 'https://example.com/success.png' : 'https://example.com/error.png',
       actionURL: `https://console.example.com/deploys/${version}`,
     });
 
     res.json({ success: true, response });
-  })
+  }),
 );
 
 // CI/CD build notification
@@ -121,7 +120,7 @@ app.post(
     });
 
     res.json({ success: true, response });
-  })
+  }),
 );
 
 // Alert/monitoring endpoint
@@ -130,11 +129,12 @@ app.post(
   asyncHandler(async (req: Request, res: Response) => {
     const { service, severity, metric, value, threshold } = req.body;
 
-    const severityEmoji = {
-      critical: '🔴',
-      warning: '⚠️',
-      info: 'ℹ️',
-    }[severity] || '📊';
+    const severityEmoji =
+      {
+        critical: '🔴',
+        warning: '⚠️',
+        info: 'ℹ️',
+      }[severity] || '📊';
 
     const title = `${severityEmoji} ${severity.toUpperCase()}: ${service}`;
     const message = `${metric}: ${value} (threshold: ${threshold})`;
@@ -148,7 +148,7 @@ app.post(
     });
 
     res.json({ success: true, response });
-  })
+  }),
 );
 
 // Error handling middleware

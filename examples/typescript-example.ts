@@ -25,7 +25,7 @@ async function sendSimpleNotification(): Promise<void> {
   try {
     const response: NotificationResponse = await client.send(
       'Hello TypeScript',
-      'This is a type-safe notification!'
+      'This is a type-safe notification!',
     );
     console.log('Notification sent:', response);
   } catch (error) {
@@ -75,12 +75,8 @@ function handleError(error: unknown): void {
 }
 
 // Example 4: Batch notifications with error recovery
-async function sendBatchNotifications(
-  notifications: NotificationOptions[]
-): Promise<void> {
-  const results = await Promise.allSettled(
-    notifications.map((notif) => client.send(notif))
-  );
+async function sendBatchNotifications(notifications: NotificationOptions[]): Promise<void> {
+  const results = await Promise.allSettled(notifications.map((notif) => client.send(notif)));
 
   results.forEach((result, index) => {
     if (result.status === 'fulfilled') {
@@ -92,11 +88,7 @@ async function sendBatchNotifications(
 }
 
 // Example 5: Reusable notification factory
-function createNotification(
-  title: string,
-  message: string,
-  type: string
-): NotificationOptions {
+function createNotification(title: string, message: string, type: string): NotificationOptions {
   return {
     title,
     message,
