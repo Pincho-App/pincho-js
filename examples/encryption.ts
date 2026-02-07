@@ -2,7 +2,8 @@
  * Encryption Example
  *
  * Demonstrates how to send encrypted notifications using the Pincho Client Library.
- * Only the message content is encrypted; title, type, and other metadata remain unencrypted.
+ * Encrypted fields: title, message, imageURL, actionURL.
+ * Type and tags remain unencrypted for filtering and routing.
  */
 
 import { Pincho } from 'pincho';
@@ -21,9 +22,9 @@ async function main() {
   console.log('Example 1: Basic encrypted notification');
   try {
     const response1 = await client.send({
-      title: 'Secure Message', // Not encrypted (visible for filtering/display)
+      title: 'Secure Message', // Encrypted
       message: 'This is sensitive information', // Encrypted
-      type: 'secure', // Not encrypted (needed for password lookup)
+      type: 'secure', // NOT encrypted (needed for password lookup)
       encryptionPassword: ENCRYPTION_PASSWORD,
     });
     console.log(`✅ Sent: ${response1.status}\n`);
@@ -32,13 +33,13 @@ async function main() {
   }
 
   // Example 2: Encrypted security alert with tags
-  console.log('Example 2: Encrypted security alert with metadata');
+  console.log('Example 2: Encrypted notification with tags');
   try {
     const response2 = await client.send({
-      title: 'Security Alert',
-      message: 'Unauthorized access attempt detected from IP 192.168.1.100',
-      type: 'security',
-      tags: ['critical', 'security', 'urgent'],
+      title: 'Security Alert', // Encrypted
+      message: 'Unauthorized access attempt detected from IP 192.168.1.100', // Encrypted
+      type: 'security', // NOT encrypted (for filtering)
+      tags: ['critical', 'security', 'urgent'], // NOT encrypted (for filtering)
       encryptionPassword: ENCRYPTION_PASSWORD,
     });
     console.log(`✅ Sent: ${response2.status}\n`);
@@ -47,15 +48,15 @@ async function main() {
   }
 
   // Example 3: Encrypted message with image and action URL
-  console.log('Example 3: Encrypted notification with image and action URL');
+  console.log('Example 3: Encrypted notification with URLs');
   try {
     const response3 = await client.send({
-      title: 'Confidential Report',
-      message: 'Q4 revenue increased by 25% - see attached report for details',
-      type: 'finance',
-      imageURL: 'https://example.com/chart.png', // Not encrypted
-      actionURL: 'https://example.com/reports/q4', // Not encrypted
-      tags: ['finance', 'quarterly'],
+      title: 'Confidential Report', // Encrypted
+      message: 'Q4 revenue increased by 25% - see attached report for details', // Encrypted
+      type: 'finance', // NOT encrypted
+      imageURL: 'https://example.com/chart.png', // Encrypted
+      actionURL: 'https://example.com/reports/q4', // Encrypted
+      tags: ['finance', 'quarterly'], // NOT encrypted
       encryptionPassword: ENCRYPTION_PASSWORD,
     });
     console.log(`✅ Sent: ${response3.status}\n`);
@@ -85,9 +86,10 @@ async function main() {
   }
 
   console.log('📝 Notes:');
-  console.log('   - Message content is encrypted using AES-128-CBC');
-  console.log('   - A random 16-byte IV is generated for each message');
-  console.log('   - Title, type, tags, imageURL, and actionURL are NOT encrypted');
+  console.log('   - Encrypted fields: title, message, imageURL, actionURL');
+  console.log('   - NOT encrypted: type, tags (needed for filtering/routing)');
+  console.log('   - A random 16-byte IV is generated for each notification');
+  console.log('   - Uses AES-128-CBC encryption matching mobile app');
   console.log('   - Encryption password must match the type configuration in the app');
   console.log('   - Store passwords securely (environment variables, secret managers)');
   console.log('   - Use strong passwords (minimum 12 characters)\n');

@@ -204,12 +204,24 @@ export class Pincho {
         : titleOrOptions;
 
     // Handle encryption if password provided
+    // Encrypted fields: title, message, imageURL, actionURL
+    // NOT encrypted: type, tags (needed for filtering/routing)
+    let finalTitle = options.title;
     let finalMessage = options.message;
+    let finalImageURL = options.imageURL;
+    let finalActionURL = options.actionURL;
     let ivHex: string | undefined;
 
     if (options.encryptionPassword) {
       const [ivBytes, ivHexString] = generateIV();
+      finalTitle = encryptMessage(options.title, options.encryptionPassword, ivBytes);
       finalMessage = encryptMessage(options.message, options.encryptionPassword, ivBytes);
+      if (options.imageURL) {
+        finalImageURL = encryptMessage(options.imageURL, options.encryptionPassword, ivBytes);
+      }
+      if (options.actionURL) {
+        finalActionURL = encryptMessage(options.actionURL, options.encryptionPassword, ivBytes);
+      }
       ivHex = ivHexString;
     }
 
@@ -226,15 +238,15 @@ export class Pincho {
       actionURL?: string;
       iv?: string;
     } = {
-      title: options.title,
+      title: finalTitle,
       message: finalMessage,
     };
 
     // Add optional parameters only if provided
     if (options.type !== undefined) body.type = options.type;
     if (normalizedTags !== undefined && normalizedTags.length > 0) body.tags = normalizedTags;
-    if (options.imageURL !== undefined) body.imageURL = options.imageURL;
-    if (options.actionURL !== undefined) body.actionURL = options.actionURL;
+    if (finalImageURL !== undefined) body.imageURL = finalImageURL;
+    if (finalActionURL !== undefined) body.actionURL = finalActionURL;
     if (ivHex !== undefined) body.iv = ivHex;
 
     // Execute with retry logic

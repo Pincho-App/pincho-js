@@ -39,7 +39,7 @@ await client.send({
 const response = await client.notifai('deployment finished, v2.1.3 is live');
 console.log(response.notification); // AI-generated title, message, tags
 
-// Encrypted messages
+// Encrypted notifications (title, message, URLs encrypted; type, tags unencrypted)
 await client.send({
   title: 'Security Alert',
   message: 'Sensitive data',

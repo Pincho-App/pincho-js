@@ -70,9 +70,10 @@ export interface NotificationOptions {
   actionURL?: string;
 
   /**
-   * Optional password for AES-128-CBC encryption of message content.
+   * Optional password for AES-128-CBC encryption.
+   * When provided, encrypts title, message, imageURL, and actionURL.
+   * Type and tags remain unencrypted for filtering/routing.
    * Must match the type configuration in the Pincho app.
-   * Only the message field is encrypted; title, type, and other metadata remain unencrypted.
    * @example 'your_strong_password'
    */
   encryptionPassword?: string;

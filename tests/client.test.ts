@@ -552,8 +552,10 @@ describe('Pincho', () => {
       const call = mockFetch.mock.calls[0]!;
       const body = JSON.parse(call[1]?.body as string);
 
-      // Title should NOT be encrypted
-      expect(body.title).toBe('Secure Message');
+      // Title should be encrypted (different from original)
+      expect(body.title).not.toBe('Secure Message');
+
+      // Type should NOT be encrypted (needed for filtering/routing)
       expect(body.type).toBe('secure');
 
       // Message should be encrypted (different from original)
@@ -564,8 +566,46 @@ describe('Pincho', () => {
       expect(typeof body.iv).toBe('string');
       expect(body.iv.length).toBe(32); // 16 bytes as hex
 
-      // Encrypted message should not contain standard Base64 chars
+      // Encrypted fields should not contain standard Base64 chars
+      expect(body.title).not.toMatch(/[+/=]/);
       expect(body.message).not.toMatch(/[+/=]/);
+    });
+
+    it('should encrypt all fields when encryptionPassword provided with URLs', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: new Headers(),
+        json: async () => ({ status: 'success', message: 'Sent' }),
+      });
+
+      const client = new Pincho({ token: 'abc12345', maxRetries: 0 });
+
+      await client.send({
+        title: 'Test Title',
+        message: 'Test message',
+        type: 'secure',
+        tags: ['test', 'encryption'],
+        imageURL: 'https://example.com/image.png',
+        actionURL: 'https://example.com/action',
+        encryptionPassword: 'test_password_123',
+      });
+
+      const call = mockFetch.mock.calls[0]!;
+      const body = JSON.parse(call[1]?.body as string);
+
+      // All encrypted fields should be different from original
+      expect(body.title).not.toBe('Test Title');
+      expect(body.message).not.toBe('Test message');
+      expect(body.imageURL).not.toBe('https://example.com/image.png');
+      expect(body.actionURL).not.toBe('https://example.com/action');
+
+      // Type and tags should remain unencrypted
+      expect(body.type).toBe('secure');
+      expect(body.tags).toEqual(['test', 'encryption']);
+
+      // IV should be included
+      expect(body.iv).toBeDefined();
+      expect(body.iv.length).toBe(32);
     });
 
     it('should not encrypt when encryptionPassword not provided', async () => {
