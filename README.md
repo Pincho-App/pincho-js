@@ -111,7 +111,7 @@ Rate limit errors (429) are retried automatically with Retry-After header suppor
 
 - **Get Token**: App → Settings → Help → copy token
 - **Documentation**: https://pincho.app/help
-- **Repository**: https://gitlab.com/pincho-app/pincho-js
+- **Repository**: https://github.com/Pincho-App/pincho-js
 - **npm**: https://www.npmjs.com/package/pincho
 
 ## License

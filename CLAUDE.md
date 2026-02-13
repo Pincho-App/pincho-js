@@ -190,8 +190,8 @@ npm run build               # Build package
 
 ## Links
 
-- **Repository**: https://gitlab.com/pincho-app/pincho-js
-- **Issues**: https://gitlab.com/pincho-app/pincho-js/-/issues
+- **Repository**: https://github.com/Pincho-App/pincho-js
+- **Issues**: https://github.com/Pincho-App/pincho-js/issues
 - **npm Package**: https://www.npmjs.com/package/pincho
 - **API Docs**: https://pincho.app/help
 - **App**: https://pincho.app

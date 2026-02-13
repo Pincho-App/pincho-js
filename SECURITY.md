@@ -15,11 +15,11 @@ The Pincho team takes security bugs seriously. We appreciate your efforts to res
 
 ### How to Report
 
-**Please do NOT report security vulnerabilities through public GitLab issues.**
+**Please do NOT report security vulnerabilities through public GitHub issues.**
 
 Instead, please report security vulnerabilities via email to:
 
-**support@pincho.dev**
+**support@pincho.app**
 
 ### What to Include
 
@@ -160,9 +160,9 @@ When we receive a security bug report:
    - Workarounds (if any)
    - Credit to reporter
 4. **Release patched versions** to npm
-5. **Publish security advisory** on GitLab and npm
+5. **Publish security advisory** on GitHub and npm
 6. **Notify users** via:
-   - GitLab security advisory
+   - GitHub security advisory
    - npm security advisory
    - Project README update
 
@@ -188,7 +188,7 @@ We thank the following individuals for responsibly disclosing security vulnerabi
 
 For security-related questions that aren't reporting vulnerabilities:
 
-- Email: support@pincho.dev
-- General questions: support@pincho.dev
+- Email: support@pincho.app
+- General questions: support@pincho.app
 
 Thank you for helping keep Pincho and its users safe!

@@ -46,8 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prettier for code formatting
 - Vitest for testing with coverage reporting
 - tsup for dual package building
-- Cloud Build configuration for CI/CD
-- GitLab issue templates
+- GitHub Actions configuration for CI/CD
+- GitHub issue templates
 
 ## [1.0.0] - TBD
 
@@ -98,6 +98,6 @@ We follow [Semantic Versioning](https://semver.org/):
 ## Links
 
 - [npm Package](https://www.npmjs.com/package/pincho)
-- [GitLab Repository](https://gitlab.com/pincho/pincho-js)
-- [Issue Tracker](https://gitlab.com/pincho/pincho-js/-/issues)
+- [GitHub Repository](https://github.com/Pincho-App/pincho-js)
+- [Issue Tracker](https://github.com/Pincho-App/pincho-js/issues)
 - [Pincho API Documentation](https://pincho.com/api)

@@ -49,7 +49,7 @@ TypeError: Cannot read property 'status' of undefined
 
 ### Suggesting Enhancements
 
-Enhancement suggestions are tracked as GitLab issues. When creating an enhancement suggestion:
+Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion:
 
 - **Use a clear and descriptive title**
 - **Provide a detailed description** of the proposed enhancement
@@ -70,7 +70,7 @@ Enhancement suggestions are tracked as GitLab issues. When creating an enhanceme
 6. Update documentation if needed
 7. Commit your changes with clear commit messages
 8. Push to your fork
-9. Open a Merge Request against `main`
+9. Open a Pull Request against `main`
 
 ## Development Setup
 
@@ -84,7 +84,7 @@ Enhancement suggestions are tracked as GitLab issues. When creating an enhanceme
 
 1. **Clone the repository:**
    ```bash
-   git clone https://gitlab.com/pincho/pincho-js.git
+   git clone https://github.com/Pincho-App/pincho-js.git
    cd javascript-sdk
    ```
 
@@ -299,7 +299,7 @@ docs(readme): update installation instructions
 test(client): add tests for timeout handling
 ```
 
-## Merge Request Process
+## Pull Request Process
 
 1. **Update documentation** if you've changed APIs
 2. **Update CHANGELOG.md** with your changes
@@ -309,7 +309,7 @@ test(client): add tests for timeout handling
 6. **Address review feedback** promptly
 7. **Squash commits** if requested before merging
 
-### Merge Request Checklist
+### Pull Request Checklist
 
 - [ ] Tests added/updated and passing
 - [ ] Documentation updated
@@ -328,11 +328,11 @@ test(client): add tests for timeout handling
 3. Commit changes: `git commit -am "chore: release v1.x.x"`
 4. Create Git tag: `git tag v1.x.x`
 5. Push changes and tag: `git push origin main --tags`
-6. Cloud Build will automatically publish to npm
+6. GitHub Actions will automatically publish to npm
 
 ## Getting Help
 
-- **GitLab Issues:** https://gitlab.com/pincho/pincho-js/-/issues
+- **GitHub Issues:** https://github.com/Pincho-App/pincho-js/issues
 - **Email:** support@pincho.com
 - **Documentation:** https://pincho.com/api
 
@@ -341,6 +341,6 @@ test(client): add tests for timeout handling
 Contributors will be recognized in:
 - The project's README.md
 - Release notes in CHANGELOG.md
-- GitLab's contribution graphs
+- GitHub's contribution graphs
 
 Thank you for contributing to Pincho!
