@@ -330,8 +330,8 @@ try {
 
 ### What Gets Encrypted
 
-- **Encrypted**: Message body only
-- **Not Encrypted**: Title, type, tags, imageURL, actionURL
+- **Encrypted**: Title, message, imageURL, actionURL
+- **Not Encrypted**: Type, tags (needed for filtering/routing)
 
 ### Configuration in Mobile App
 
