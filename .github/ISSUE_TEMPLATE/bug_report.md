@@ -1,3 +1,9 @@
+---
+name: Bug report
+about: Something is broken or behaves unexpectedly
+labels: [bug]
+---
+
 ## Bug Description
 
 <!-- A clear and concise description of the bug -->

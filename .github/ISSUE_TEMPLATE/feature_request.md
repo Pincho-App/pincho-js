@@ -1,3 +1,9 @@
+---
+name: Feature request
+about: Suggest a new capability or improvement
+labels: [enhancement]
+---
+
 ## Feature Description
 
 <!-- A clear and concise description of the feature you'd like to see -->
@@ -56,7 +62,7 @@ const client = new Pincho({
 
 ## Willing to Contribute?
 
-<!-- Would you be willing to submit a merge request for this feature? -->
+<!-- Would you be willing to submit a pull request for this feature? -->
 
 - [ ] Yes, I can implement this
 - [ ] Yes, with guidance
